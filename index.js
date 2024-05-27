@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const logger = require('../API-EHBO/src/util/logger');
+const logger = require('./src/util/logger');
 
 app.use(express.json())
 
