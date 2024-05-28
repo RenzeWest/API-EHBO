@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-// app.use(loginRoutes);
+app.use(loginRoutes);
 
 // Remaining routes
 app.use((req, res, next) => { // This will run if a route isn't found
@@ -34,6 +34,7 @@ app.use((req, res, next) => { // This will run if a route isn't found
 
 // Als er een error is (next) dan komt hij hier. Hij kijkt of er een status en massage is, zo ja geeft hij die mee, zo nee geeft hij 500 en server error.
 app.use((error, req, res, next) => {
+    logger.warn(`An error has occured: error (${error.status || 500}), message (${error.message})`);
     res.status(error.status || 500).json({
         status: error.status || 500,
         message: error.message || 'Internal Server Error',
@@ -42,7 +43,7 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(port, () => {
-    logger.info(`Example app listening on port ${port}`)
+    logger.info(`The API is listening on port ${port}`)
 });
 
 // Deze kan chai gebruiker om in de tests de server op te starten
