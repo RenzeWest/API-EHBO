@@ -1,4 +1,5 @@
-const secretkey = process.env.JWT_SECRET || 'DitIsEenGeheim'
+require('dotenv').config();
+const secretkey = process.env.JWT_SECRETKEY || 'DitIsEenGeheim';
 
 const config = {
     secretkey: secretkey,
