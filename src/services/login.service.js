@@ -7,18 +7,19 @@ const loginService = {
             const result = await pool.request().query('SELECT * FROM Certificaat');
             console.log(result.recordset);
 
-        } catch (error) {
-            logger.error(error)
-        }
+            if (result.recordset) {
+                logger.trace('LoginService -> test');
+                callback(null, {
+                    status: 200,
+                    message: 'This is a message',
+                    data: result.recordset
+                });
+            }
 
-        logger.trace('LoginService -> test')
-            callback(null, {
-                status: 200,
-                message: 'This is a message',
-                data: {
-                    message: 'Data is leeg'
-                }
-            });
+        } catch (error) {
+            logger.error(error);
+            callback(error, null);
+        }
     }
 }
 
