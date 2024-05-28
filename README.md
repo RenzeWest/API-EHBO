@@ -19,6 +19,9 @@ now run `npm start` to test if its working
 # CMD Commands
 
 `npm build` Is another command for `npm install`.
+
 `npm start` Start the server localy.
+
 `npm run dev` Also starts the server localy, but it restarts when you save files.
+
 `npm test` Run the tests you have written.
