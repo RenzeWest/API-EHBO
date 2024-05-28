@@ -26,6 +26,7 @@ function middlewareVoorbeeld() {
 
 // Routes
 router.get('/api/test', loginController.test);
+router.get('/api/login', loginController.login);
 
 module.exports = router;
 

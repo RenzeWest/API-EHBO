@@ -27,6 +27,25 @@ const loginController = {
             }
 
         });
+    },
+    login: (req, res, next) => {
+        loginService.login((error, succes) => {
+            if (error) {
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                });
+            }
+
+            if (succes) {
+                res.status(200).json( {
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+               });
+           }
+        });
     }
 }
 
