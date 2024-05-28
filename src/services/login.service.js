@@ -1,5 +1,6 @@
 const pool = require('../doa/sql-database');
 const logger = require('../util/logger');
+const sql = require('mssql');
 const jwt = require('jsonwebtoken');
 const jwtSecretKey = require('../util/config').secretkey;
 
@@ -70,7 +71,55 @@ const loginService = {
             // Er is iets foutgegaan
             callback(error, null);
         }
-    }
+    },
+
+    loginPrepared: async (params, callback) => {
+        logger.trace('LoginService -> Login');
+        const prepStatement = new sql.PreparedStatement(pool);
+        logger.debug(`Email: ${params.emailadres}, wachtwoord: ${params.wachtwoord}`)
+
+        try {
+            prepStatement.input('emailAdres', sql.VarChar);
+            prepStatement.input('wachtwoordHash', sql.VarChar);
+            await prepStatement.prepare('SELECT * FROM Gebruiker WHERE Emailadres = @emailAdres AND WachtwoordHash = @wachtwoordHash');
+            const result = await prepStatement.execute({emailAdres: params.emailadres, wachtwoordHash: params.wachtwoord});
+
+            if (result.recordset.length > 0) {
+                // Er is een gebruiker gevonden met de combinatie van wachtwoord en email
+                logger.debug('User has email and password correct');
+
+                // Creeër token (Ik weet dat dit in 1 regel kan, maar het is zo makkelijker voor jullie om te snappen, hoop ik...)
+                const gebruikerID = result.recordset[0].GebruikerID; // Haal de ID uit de response
+                const tokenPayload = {userID: gebruikerID}
+
+                // Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
+                jwt.sign(tokenPayload, jwtSecretKey, sessieDuur, (err, token) => {
+                    logger.info('User succesfully logged in');
+                    callback(null, {
+                        status: 200,
+                        message: 'User logged in',
+                        data: {
+                            GebruikerID: gebruikerID,
+                            SessionToken: token
+                        }
+                    });
+                });
+
+            } else {
+                // Er is geen gebruiker met de wachtwoord en email combinatie gevonden
+                callback({status: 404,
+                    message: 'User not found or password invalid',
+                    data: {}}, null);
+            }
+
+        } catch (error) {
+            logger.error(error);
+            callback(error, null);
+        } finally {
+            logger.debug('Made the finally')
+            await prepStatement.unprepare();
+        }
+    } 
 }
 
 module.exports = loginService;

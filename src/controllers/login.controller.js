@@ -29,7 +29,7 @@ const loginController = {
         });
     },
     login: (req, res, next) => {
-        loginService.login((error, succes) => {
+        loginService.loginPrepared({emailadres: req.body.emailadres, wachtwoord: req.body.wachtwoord}, (error, succes) => {
             if (error) {
                 return next({
                     status: error.status,
@@ -45,6 +45,14 @@ const loginController = {
                     data: succes.data
                });
            }
+        });
+    },
+    validateToken: (req, res, next) => {
+        // Als het hierkomt is de token al valid
+        res.status(200).json({
+            status: 200,
+            message: 'User authorised',
+            data: {}
         });
     }
 }
