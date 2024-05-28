@@ -33,8 +33,4 @@ describe ('UC-nr Example Test', () => {
         });
     });
 
-
-
-
-
 });
