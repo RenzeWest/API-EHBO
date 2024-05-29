@@ -27,6 +27,33 @@ const loginController = {
             }
 
         });
+    },
+    login: (req, res, next) => {
+        loginService.loginPrepared({emailadres: req.body.emailadres, wachtwoord: req.body.wachtwoord}, (error, succes) => {
+            if (error) {
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                });
+            }
+
+            if (succes) {
+                res.status(200).json( {
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+               });
+           }
+        });
+    },
+    validateToken: (req, res, next) => {
+        // Als het hierkomt is de token al valid
+        res.status(200).json({
+            status: 200,
+            message: 'User authorised',
+            data: {}
+        });
     }
 }
 
