@@ -9,6 +9,9 @@ const loginRoutes = require('./src/routes/login.routes');
 
 app.use(express.json());
 
+// Enable all cors
+app.use(cors());
+
 app.get('/', (req, res) => {
     logger.trace('route: "/" called');
     res.status(200).json({
