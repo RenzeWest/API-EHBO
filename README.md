@@ -12,6 +12,8 @@ DB_USER=Username
 DB_DATABASE=DatabaseToUse
 DB_PWD=Password
 DB_SERVER=servername
+
+JWT_SECRETKEY=key
 ```
 
 now run `npm start` to test if its working
