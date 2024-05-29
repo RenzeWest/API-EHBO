@@ -8,30 +8,26 @@ const logger = require('../util/logger');
 const jwt = require('jsonwebtoken');
 const jwtSecretKey = require('../util/config').secretkey;
 
-
 // Controller
 // const userController = require('../controllers/user.controller') <-- Voorbeeld
 const loginController = require('../controllers/login.controller');
-
-
-
-
-
 
 // Middle ware validadtion
 function validateLogin(req, res, next) {
     // Verify that we receive the expected input
     try {
         const body = req.body;
-        chai.expect(body).to.have.property('emailadres');
-        chai.expect(body).to.have.property('wachtwoord');
+        chai.expect(body, 'Missing emailadres').to.have.property('emailadres');
+        chai.expect(body, 'Missing wachtwoord').to.have.property('wachtwoord');
+
         next()
     } catch (ex) {
+        const splitedMessage = ex.message.split(':');
         next({
             status: 400,
-            message: ex.toString(),
+            message: splitedMessage[0],
             data: {}
-        })
+        });
     }
 }
 
