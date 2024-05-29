@@ -8,15 +8,9 @@ const logger = require('../util/logger');
 const jwt = require('jsonwebtoken');
 const jwtSecretKey = require('../util/config').secretkey;
 
-
 // Controller
 // const userController = require('../controllers/user.controller') <-- Voorbeeld
 const loginController = require('../controllers/login.controller');
-
-
-
-
-
 
 // Middle ware validadtion
 function validateLogin(req, res, next) {
