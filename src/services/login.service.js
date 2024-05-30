@@ -149,6 +149,7 @@ const loginService = {
             }
             logger.debug('prepare')
             prepStatement.execute({firstName: params.firstName, lastName: params.lastName, emailAddress: params.emailAddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: 1}, (err, result) => {
+                //TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
                 if (err) {
                     callback(err, null)
                     logger.error(err)
@@ -175,9 +176,6 @@ const loginService = {
     }
 }
         
-    
-
-
 
 module.exports = loginService;
 
