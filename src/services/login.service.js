@@ -125,8 +125,10 @@ const loginService = {
 
     update: async (userId, params, callback) => {
         logger.trace('loginService -> update')
+        //prepared statement aanmaken
         const prepStatement = new sql.PreparedStatement(pool);
 
+        // variabelen aangeven die in prep statement komen
         prepStatement.input('firstName', sql.NVarChar);
         prepStatement.input('lastName', sql.NVarChar);
         prepStatement.input('emailAddress', sql.NVarChar);
@@ -139,22 +141,24 @@ const loginService = {
         prepStatement.input('gender', sql.NVarChar);
         prepStatement.input('dateOfBirth', sql.Date);
         prepStatement.input('userID', sql.BigInt)
-        console.log('voor prepare')
+        
 
-
+        //sql statement in prep statement zetten met variabelen
         prepStatement.prepare('UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailAddress, PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender WHERE UserId = @userID', err => {
             if (err) {
                 callback(err, null)
                 logger.error(err)
             }
             logger.debug('prepare')
-            prepStatement.execute({firstName: params.firstName, lastName: params.lastName, emailAddress: params.emailAddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: 1}, (err, result) => {
+            // variabelen toevoegen van params naar prepstatement input variabelen en executen
+            prepStatement.execute({firstName: params.firstName, lastName: params.lastName, emailAddress: params.emailAddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
                 //TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
                 if (err) {
                     callback(err, null)
                     logger.error(err)
                 }
                 logger.debug('execute')
+                //prep statement unprepare zodat connection terug naar pool gaat
                 prepStatement.unprepare(err => {
                     logger.debug('unprepare')
                     if(err) {
@@ -166,7 +170,6 @@ const loginService = {
                             status: 200,
                             message: 'User updated',
                             data: {}
-                            // TO-DO User data teruggeven
                         })
                     }
                     

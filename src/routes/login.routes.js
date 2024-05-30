@@ -83,7 +83,7 @@ function middlewareVoorbeeld() {
 router.get('/api/test', loginController.test);
 router.post('/api/login',validateLogin, loginController.login);
 router.get('/api/validatetoken', validateToken, loginController.validateToken);
-router.put('/api/update', loginController.update)
+router.put('/api/update', validateToken, loginController.update)
 
 module.exports = router;
 
