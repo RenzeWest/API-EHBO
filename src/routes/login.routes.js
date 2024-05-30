@@ -17,8 +17,8 @@ function validateLogin(req, res, next) {
     // Verify that we receive the expected input
     try {
         const body = req.body;
-        chai.expect(body, 'Missing emailadres').to.have.property('emailadres');
-        chai.expect(body, 'Missing wachtwoord').to.have.property('wachtwoord');
+        chai.expect(body, 'Missing emailaddress').to.have.property('emailaddress');
+        chai.expect(body, 'Missing password').to.have.property('password');
 
         next()
     } catch (ex) {
@@ -71,6 +71,9 @@ function validateToken(req, res, next) {
     }
 }
 
+/**
+ * @deprecated - Is om te testen, zou niet moeten worden gebruikt
+ */
 function middlewareVoorbeeld() {
     logger.info('MiddlewareRan');
 }
