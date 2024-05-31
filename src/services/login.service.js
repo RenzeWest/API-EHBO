@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const jwtSecretKey = require('../util/config').secretkey;
 
 // Dit is voor hoelang een sessie moet duren
-const sessionDuration = { expiresIn: '1h' } // nu is het dus 1 uur
+const sessionDuration = { expiresIn: '12d' } // nu is het dus 1 uur
 
 const loginService = {
     /**
