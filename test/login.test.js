@@ -24,7 +24,7 @@ describe ('UC: Login Tests', () => {
     // });
 
     beforeEach(async () => {
-        await prepareDatabase();
+        
     });
 
     // Controleerd of je kan inloggen
@@ -132,27 +132,3 @@ describe ('UC: Login Tests', () => {
     
 
 });
-
-async function prepareDatabase() {
-
-    if(!pool.connected) {
-        await pool.connect();
-    }
-
-    try {
-        const result = await pool.request().query("SELECT * FROM Member WHERE Emailaddress = 'rg.westerink@student.avans.nl' AND Password = 'evenMoreSecretPassword!!!!'");
-
-        if (result.recordset[0].lenght === 0) {
-            // HET IS NIET GOED, VOEG IEMAND TOE!!!!!!!!
-        } else {
-            // HET IS GOED
-        }
-
-    } catch (error) {
-        console.error(error)
-    }
-    // Voor succes login check if user aanwezig is: zo nee voeg toe
-
-    // Voor fail, check of user niet aanwezig is: is ie het wel, verwijder
-
-}
