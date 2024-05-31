@@ -123,8 +123,12 @@ const loginService = {
 
     
 
-    update: async (userId, params, callback) => {
+    update: async(userId, params, callback) => {
         logger.trace('loginService -> update')
+
+        if(!pool.connected) {
+            await pool.connect();
+        }
         //prepared statement aanmaken
         const prepStatement = new sql.PreparedStatement(pool);
 
@@ -141,41 +145,51 @@ const loginService = {
         prepStatement.input('gender', sql.NVarChar);
         prepStatement.input('dateOfBirth', sql.Date);
         prepStatement.input('userID', sql.BigInt)
-        
-
-        //sql statement in prep statement zetten met variabelen
-        prepStatement.prepare('UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailAddress, PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender WHERE UserId = @userID', err => {
-            if (err) {
-                callback(err, null)
-                logger.error(err)
-            }
-            logger.debug('prepare')
-            // variabelen toevoegen van params naar prepstatement input variabelen en executen
-            prepStatement.execute({firstName: params.firstName, lastName: params.lastName, emailAddress: params.emailAddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
-                //TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
+        //alles aanwezig?
+        if (params.firstName && params.lastName && params.emailAddress && params.phoneNumber && params.street && params.number && params.postCode && params.city && params.role && params.dateOfBirth && params.dateOfBirth && params.gender) {
+            //sql statement in prep statement zetten met variabelen
+            prepStatement.prepare('UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailAddress, PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender WHERE UserId = @userID', err => {
                 if (err) {
                     callback(err, null)
                     logger.error(err)
                 }
-                logger.debug('execute')
-                //prep statement unprepare zodat connection terug naar pool gaat
-                prepStatement.unprepare(err => {
-                    logger.debug('unprepare')
-                    if(err) {
-                        logger.error(err)
+                logger.debug('prepare')
+                // variabelen toevoegen van params naar prepstatement input variabelen en executen
+                prepStatement.execute({firstName: params.firstName, lastName: params.lastName, emailAddress: params.emailAddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId },
+                    (err, result) => {
+                    //TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
+                    if (err) {
                         callback(err, null)
-                    } else {
-                        logger.info('User updated')
-                        callback(null, {
-                            status: 200,
-                            message: 'User updated',
-                            data: {}
-                        })
+                        logger.error(err)
                     }
-                    
+                    logger.debug('execute')
+                    //prep statement unprepare zodat connection terug naar pool gaat
+                    prepStatement.unprepare(err => {
+                        logger.debug('unprepare')
+                        if(err) {
+                            logger.error(err)
+                            callback(err, null)
+                        } else {
+                            logger.info('User updated')
+                            callback(null, {
+                                status: 200,
+                                message: 'User updated',
+                                data: {}
+                            })
+                        }
+                        
+                    })
                 })
             })
-        })
+        } else {
+            callback({
+                status: 400,
+                message: 'Required field missing',
+                data: {}
+            }, null)
+        }
+
+        
     }
 }
         
