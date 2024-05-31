@@ -16,7 +16,6 @@ const corsOptions = {
 // Enable all cors
 app.use(cors(corsOptions));
 
-
 app.get('/', (req, res) => {
     logger.trace('route: "/" called');
     res.status(200).json({

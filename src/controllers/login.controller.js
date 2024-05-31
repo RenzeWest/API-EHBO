@@ -3,11 +3,13 @@ const loginService = require('../services/login.service');
 
 const loginController = {
 
+    /**
+     * @deprecated - Is om te testen, zou niet moeten worden gebruikt
+     */
     test: (req, res, next) => {
         logger.trace('LoginController -> test');
 
         // Roep de service aan 
-
         loginService.test((error, succes) => {
             // This will run if there is a error
             if (error) {
@@ -28,8 +30,9 @@ const loginController = {
 
         });
     },
+
     login: (req, res, next) => {
-        loginService.loginPrepared({emailadres: req.body.emailadres, wachtwoord: req.body.wachtwoord}, (error, succes) => {
+        loginService.login({emailaddress: req.body.emailaddress, password: req.body.password}, (error, succes) => {
             if (error) {
                 return next({
                     status: error.status,

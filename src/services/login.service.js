@@ -5,9 +5,12 @@ const jwt = require('jsonwebtoken');
 const jwtSecretKey = require('../util/config').secretkey;
 
 // Dit is voor hoelang een sessie moet duren
-const sessieDuur = { expiresIn: '1h' } // nu is het dus 1 uur
+const sessionDuration = { expiresIn: '12d' } // nu is het dus 1 uur
 
 const loginService = {
+    /**
+     * @deprecated - Is om te testen, zou niet moeten worden gebruikt
+     */
     test: async (callback) => {
         logger.trace('LoginService -> test');
         try {
@@ -30,8 +33,10 @@ const loginService = {
         }
     },
 
-    // Method to check if a user exists, if so it will send back a token, with the ID inside of it
-    login: async (callback) => {
+    /** Method to check if a user exists, if so it will send back a token, with the ID inside of it
+     * @deprecated - Gebruiker de preparedLogin
+     */
+    loginDep: async (callback) => {
         logger.trace('LoginService -> login');
         try {
             // Controleer of er een gebruiker met de wachtwoord en email combinatie is
@@ -73,33 +78,126 @@ const loginService = {
         }
     },
 
-    loginPrepared: async (params, callback) => {
-        logger.trace('LoginService -> Login');
+    login: async (params, callback) => {
+        logger.trace('login.service -> login');
+
+        if (!pool.connected) {
+            await pool.connect();
+        }
+
+        // Get a connection fore the prepared statement
         const prepStatement = new sql.PreparedStatement(pool);
-        logger.debug(`Email: ${params.emailadres}, wachtwoord: ${params.wachtwoord}`)
+
+        // Prepare valiables
+        prepStatement.input('password', sql.NVarChar);
+        prepStatement.input('emailaddress', sql.NVarChar);
+
+        // Bereid het statement door
+        prepStatement.prepare('SELECT * FROM Member WHERE Emailaddress = @emailaddress AND Password = @password', err => {
+            if (err) {
+                callback(err, null);
+                logger.error(err);
+                return;
+            }
+            
+            // Geef de waarden mee en voer uit
+            prepStatement.execute({password: params.password, emailaddress: params.emailaddress}, (err, result) => {
+                if (err) {
+                    callback(err, null);
+                    logger.error(err);
+                    return;
+                }
+                logger.debug('Login -> execute');
+
+                // Controlleer of er een gebruiker is gevonden
+                if (result.recordset.length === 0) {
+                    logger.info('No user found');
+                    callback({
+                        status: 404,
+                        message: 'User not found or password invalid',
+                        data: {}}, null);
+
+                    prepStatement.unprepare(err => {
+                        logger.debug('Login -> statement unprepared');
+                        if (err) {
+                            logger.error(err);
+                            callback(err, null);
+                        }
+                    });
+                    return;
+                }
+
+                // Unprepare statment om connectie vrij te geven
+                prepStatement.unprepare(err => {
+                    logger.debug('Login -> statement unprepared');
+                    if (err) {
+                        logger.error(err);
+                        callback(err, null);
+                        return;
+                    } else {
+                        logger.info('Login Succesfull');
+
+                        // Creeër token (UserId wordt herbruikt)
+                        const UserId = Number(result.recordset[0].UserId); // Haal de ID uit de response
+                        const tokenPayload = {userId: UserId};
+
+                        // Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
+                        jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
+                            logger.info('User has succesfully logged in');
+                            callback(null, {
+                                status: 200,
+                                message: 'User has succesfully logged in',
+                                data: {
+                                    UserId: UserId,
+                                    Permissions: result.recordset[0].Role,
+                                    SessionToken: token
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+        });
+
+    },
+
+    /**
+     * @deprecated -> We gebruiken de minder async variant
+     * @param {*} params User emailaddress and password
+     * @param {*} callback 
+     */
+    loginPrepared: async (params, callback) => {
+        logger.trace('LoginService -> LoginPrepared');
+
+        if (!pool.connected) {
+            await pool.connect();
+        }
+
+        const prepStatement = new sql.PreparedStatement(pool);
 
         try {
-            prepStatement.input('emailAdres', sql.VarChar);
-            prepStatement.input('wachtwoordHash', sql.VarChar);
-            await prepStatement.prepare('SELECT * FROM Gebruiker WHERE Emailadres = @emailAdres AND WachtwoordHash = @wachtwoordHash');
-            const result = await prepStatement.execute({emailAdres: params.emailadres, wachtwoordHash: params.wachtwoord});
+            prepStatement.input('emailaddress', sql.VarChar);
+            prepStatement.input('password', sql.VarChar);
+            await prepStatement.prepare('SELECT * FROM Member WHERE Emailaddress = @emailaddress AND Password = @password');
+            const result = await prepStatement.execute({emailaddress: params.emailaddress, password: params.password});
 
             if (result.recordset.length > 0) {
                 // Er is een gebruiker gevonden met de combinatie van wachtwoord en email
                 logger.debug('User has email and password correct');
 
-                // Creeër token (Ik weet dat dit in 1 regel kan, maar het is zo makkelijker voor jullie om te snappen, hoop ik...)
-                const gebruikerID = result.recordset[0].GebruikerID; // Haal de ID uit de response
-                const tokenPayload = {userID: gebruikerID}
+                // Creeër token UserId wordt herbruikt
+                const UserId = result.recordset[0].UserId; // Haal de ID uit de response
+                const tokenPayload = {userId: UserId}
 
                 // Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
-                jwt.sign(tokenPayload, jwtSecretKey, sessieDuur, (err, token) => {
+                jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
                     logger.info('User succesfully logged in');
                     callback(null, {
                         status: 200,
                         message: 'User logged in',
                         data: {
-                            GebruikerID: gebruikerID,
+                            UserId: UserId,
+                            Permissions: result.recordset[0].Role,
                             SessionToken: token
                         }
                     });
