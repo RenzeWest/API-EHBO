@@ -1,6 +1,7 @@
 // const express = require('express')
 const sql = require('mssql');
 require('dotenv').config({path:'API-EHBO/.env'});
+const logger = require('../util/logger');
 
 const poolConfig = {
     user: process.env.DB_USER,
@@ -19,13 +20,13 @@ const pool = new sql.ConnectionPool(poolConfig);
 async function initializePool() {
     try {
         await pool.connect();
-        console.log('Database Connected');
+        logger.info('Database Connected');
 
         pool.on('error', err => {
-            console.error('Unexpected error on idle connection pool, error: ' + err)
+            logger.error('Unexpected error on idle connection pool, error: ' + err)
         });
     } catch (error) {
-        console.error('Error connecting database: ' + error)
+        logger.error('Error connecting database: ' + error)
     }
 }
 
