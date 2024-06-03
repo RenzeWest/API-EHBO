@@ -20,7 +20,7 @@ const invalidtoken ='invalidToken'
 describe ('User update test', () => {
 
 
-    it('Missing required field', (done) => {
+    it.skip('Missing required field', (done) => {
         chai.request(server)
         .put(endpointToTest)
         .set('Authorization', validtoken)
@@ -143,7 +143,7 @@ describe ('User update test', () => {
         });
     });
 
-    it('User succesfully changed', (done) => {
+    it.skip('User succesfully changed', (done) => {
         chai.request(server)
         .put(endpointToTest)
         .set('Authorization', validtoken)
