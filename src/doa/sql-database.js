@@ -1,8 +1,7 @@
 // const express = require('express')
 const sql = require('mssql');
-require('dotenv').config();
+require('dotenv').config({path:'API-EHBO/.env'});
 const logger = require('../util/logger');
-
 
 const poolConfig = {
     user: process.env.DB_USER,

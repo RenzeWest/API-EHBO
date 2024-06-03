@@ -1,0 +1,34 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run tests
+        env:
+          DB_PORT: 1443
+          DB_USER: ehbokast
+          DB_DATABASE: EHBODB2
+          DB_PWD: JMGaming
+          DB_SERVER: aei-sql2.avans.nl
+        run: npm test
+
+      
+      
