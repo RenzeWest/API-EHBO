@@ -50,6 +50,25 @@ const loginController = {
            }
         });
     },
+
+    update: (req, res, next) => {
+        loginService.update(req.userId, req.body, (error, succes) => {
+            if (error) {
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status:200,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        })
+    },
     validateToken: (req, res, next) => {
         // Als het hierkomt is de token al valid
         res.status(200).json({
