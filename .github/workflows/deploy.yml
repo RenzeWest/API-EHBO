@@ -1,9 +1,8 @@
-name: Test
+name: Test on release branch
 
 on:
   push:
     branches:
-    - main
     - release
   workflow_dispatch:
 jobs:
