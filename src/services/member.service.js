@@ -59,6 +59,9 @@ const memberService = {
                         return;
                     } else {
                         logger.info('getMember Succesfull');
+                        const noPassword = result.recordset[0];
+                        delete noPassword.Password;
+
                         callback(null, {
                             status: 200,
                             message: `User found with id ${userId}`,

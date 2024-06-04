@@ -33,7 +33,6 @@ describe ('UC Member Tests', () => {
             chai.expect(data).to.have.property('FirstName').that.is.a('string').equals('Renze');
             chai.expect(data).to.have.property('LastName').that.is.a('string').equals('Westerink');
             chai.expect(data).to.have.property('Emailaddress').that.is.a('string').equals('rg.westerink@student.avans.nl');
-            chai.expect(data).to.have.property('Password').that.is.a('string').equals('evenMoreSecretPassword!!!!');
             chai.expect(data).to.have.property('PhoneNumber').that.is.a('string').equals('06-29158683');
             chai.expect(data).to.have.property('Street').that.is.a('string').equals('Verlende Witmoeren');
             chai.expect(data).to.have.property('HouseNr').that.is.a('string').equals('10');
