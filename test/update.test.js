@@ -11,7 +11,7 @@ tracer.setLevel('warn');
 
 const endpointToTest = '/api/update';
 
-const validtoken = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIn0.dC2o2x5t19vp5ul5Scghzv1HQLHh3c17TDuXiveFiSQ'
+let validToken = ''
 const invalidtoken ='invalidToken'
 
 
@@ -19,23 +19,45 @@ const invalidtoken ='invalidToken'
 // Voorbeeld test
 describe ('User update test', () => {
 
+    before((done) => {
+        console.log('before')
+        chai.request(server)
+        .post('/api/login')
+        .send({
+            password: 'secretPassword',
+            emailaddress: 'janmetlangeachternaam@email.com'
+        })
+        .end((err, res) => {
+            if (err) {
+                console.error('Error obtaining token:', err);
+                done(err);
+            } else {
+                validToken = 'Bearer ' + res.body.data.SessionToken;
+                done();
+            }
+        })  
+    })
 
-    it.skip('Missing required field', (done) => {
+
+
+
+    it('Missing required field', (done) => {
         chai.request(server)
         .put(endpointToTest)
-        .set('Authorization', validtoken)
+        .set('Authorization', validToken)
         .send({
-            firstName: "Johan",
-            lastName: "de Boer",
-            emailAddress: "johandeboer@email.com",
-            //phoneNumber: "06-12345678",
-            street: "straat",
-            number: "10",
-            postCode: "1234AB",
-            city: "Utrecht",
-            role: "Gast",
-            gender: "M",
-            dateOfBirth: "1960-10-10"
+            firstName: 'Jan',
+            lastName: 'lastName',
+            emailaddress: 'janmetlangeachternaam@email.com',
+            password: 'secretPassword',
+            //phoneNumber: '06-12345978',
+            street: 'straat',
+            number: '10',
+            postCode: '1234AB',
+            city: 'Breda',
+            role: 'Hulpverlener',
+            dateOfBirth: '1970-10-10',
+            gender: 'M'
         })
         .end((err, res) => {
             chai.expect(res).to.have.status(400);
@@ -56,18 +78,18 @@ describe ('User update test', () => {
         .put(endpointToTest)
         .set('Authorization', invalidtoken)
         .send({
-              firstName: 'Jan',
-              lastName: 'lastName',
-              emailAddress: 'janmetlangeachternaam@email.com',
-              password: 'wachtwoord',
-              phoneNumber: '06-12345978',
-              street: 'straat',
-              number: '10',
-              postCode: '1234AB',
-              city: 'Breda',
-              role: 'Hulpverlener',
-              dateOfBirth: '1970-10-10',
-              gender: 'M'
+            firstName: 'Jan',
+            lastName: 'lastName',
+            emailaddress: 'janmetlangeachternaam@email.com',
+            password: 'secretPassword',
+            phoneNumber: '06-12345978',
+            street: 'straat',
+            number: '10',
+            postCode: '1234AB',
+            city: 'Breda',
+            role: 'Hulpverlener',
+            dateOfBirth: '1970-10-10',
+            gender: 'M'
         })
         .end((err, res) => {
             chai.expect(res).to.have.status(401);
@@ -87,18 +109,18 @@ describe ('User update test', () => {
         .put(endpointToTest)
         .set('Authorization', invalidtoken)
         .send({
-              firstName: 'Jan',
-              lastName: 'lastName',
-              emailAddress: 'janmetlangeachternaam@email.com',
-              password: 'wachtwoord',
-              phoneNumber: '06145978',
-              street: 'straat',
-              number: '10',
-              postCode: '1234AB',
-              city: 'Breda',
-              role: 'Hulpverlener',
-              dateOfBirth: '1970-10-10',
-              gender: 'M'
+            firstName: 'Jan',
+            lastName: 'lastName',
+            emailaddress: 'janmetlangeachternaam@email.com',
+            password: 'secretPassword',
+            phoneNumber: '065978',
+            street: 'straat',
+            number: '10',
+            postCode: '1234AB',
+            city: 'Breda',
+            role: 'Hulpverlener',
+            dateOfBirth: '1970-10-10',
+            gender: 'M'
         })
         .end((err, res) => {
             chai.expect(res).to.have.status(401);
@@ -117,18 +139,18 @@ describe ('User update test', () => {
         chai.request(server)
         .put(endpointToTest)
         .send({
-              firstName: 'Jan',
-              lastName: 'lastName',
-              emailAddress: 'janmetlangeachternaam@email.com',
-              password: 'wachtwoord',
-              phoneNumber: '06-12345978',
-              street: 'straat',
-              number: '10',
-              postCode: '1234AB',
-              city: 'Breda',
-              role: 'Hulpverlener',
-              dateOfBirth: '1970-10-10',
-              gender: 'M'
+            firstName: 'Jan',
+            lastName: 'lastName',
+            emailaddress: 'janmetlangeachternaam@email.com',
+            password: 'secretPassword',
+            phoneNumber: '06-12345978',
+            street: 'straat',
+            number: '10',
+            postCode: '1234AB',
+            city: 'Breda',
+            role: 'Hulpverlener',
+            dateOfBirth: '1970-10-10',
+            gender: 'M'
         })
         .end((err, res) => {
             chai.expect(res).to.have.status(401);
@@ -143,15 +165,15 @@ describe ('User update test', () => {
         });
     });
 
-    it.skip('User succesfully changed', (done) => {
+    it('User succesfully changed', (done) => {
         chai.request(server)
         .put(endpointToTest)
-        .set('Authorization', validtoken)
+        .set('Authorization', validToken)
         .send({
               firstName: 'Jan',
               lastName: 'lastName',
-              emailAddress: 'janmetlangeachternaam@email.com',
-              password: 'wachtwoord',
+              emailaddress: 'janmetlangeachternaam@email.com',
+              password: 'secretPassword',
               phoneNumber: '06-12345978',
               street: 'straat',
               number: '10',
@@ -180,10 +202,11 @@ describe ('User update test', () => {
                 await pool.connect();
             }
             const request = pool.request();
-            const result = await request.query("UPDATE Member SET City = 'Utrecht' WHERE EmailAddress = 'janmetlangeachternaam@email.com'");
+            const result = await request.query("UPDATE Member SET City = 'Utrecht' WHERE Emailaddress = 'janmetlangeachternaam@email.com'");
         } catch (err) {
             logger.error('Error resetting dummy data', err)
         }
+        
     });
 
 });
