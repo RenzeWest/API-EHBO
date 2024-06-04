@@ -83,6 +83,8 @@ router.get('/api/test', loginController.test);
 router.post('/api/login',validateLogin, loginController.login);
 router.get('/api/validatetoken', validateToken, loginController.validateToken);
 
-module.exports = router;
+module.exports = {router,
+    validateToken
+};
 
 

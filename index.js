@@ -7,6 +7,7 @@ const logger = require('./src/util/logger');
 
 // Routes requirements
 const loginRoutes = require('./src/routes/login.routes');
+const firstResponderRoutes = require('./src/routes/firstResponder.routes')
 
 app.use(express.json());
 
@@ -26,7 +27,8 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use(loginRoutes);
+app.use(loginRoutes.router);
+app.use(firstResponderRoutes)
 
 // Remaining routes
 app.use((req, res, next) => { // This will run if a route isn't found
