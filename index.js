@@ -6,7 +6,10 @@ const port = process.env.PORT || 3000;
 const logger = require('./src/util/logger');
 
 // Routes requirements
-const loginRoutes = require('./src/routes/login.routes');
+
+const loginRoutes = require('./src/routes/login.routes').router;
+const memberRoutes = require('./src/routes/member.routes');
+
 const firstResponderRoutes = require('./src/routes/firstResponder.routes')
 
 app.use(express.json());
@@ -27,11 +30,16 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+
+
+app.use(memberRoutes);
 app.use(loginRoutes.router);
 app.use(firstResponderRoutes)
 
+
 // Remaining routes
 app.use((req, res, next) => { // This will run if a route isn't found
+    logger.warn('Route not found');
     next({
         status: 404,
         message: 'Route not found',
