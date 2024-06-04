@@ -39,8 +39,9 @@ describe ('User update test', () => {
     })
 
 
+
+
     it('Missing required field', (done) => {
-        console.log('first testcase ', validToken)
         chai.request(server)
         .put(endpointToTest)
         .set('Authorization', validToken)
