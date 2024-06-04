@@ -67,7 +67,7 @@ const loginController = {
                     data: succes.data
                 })
             }
-        })
+        });
     },
     validateToken: (req, res, next) => {
         // Als het hierkomt is de token al valid
