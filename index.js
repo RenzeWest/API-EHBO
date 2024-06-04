@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 
 
 app.use(memberRoutes);
-app.use(loginRoutes.router);
+app.use(loginRoutes);
 app.use(firstResponderRoutes)
 
 
