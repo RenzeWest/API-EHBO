@@ -18,7 +18,7 @@ const firstResponderService = {
         }
 
         const request = new sql.Request(pool);
-        request.query("SELECT P.Title, P.Date, P.StartTime, P.EndTime, P.Description, P.Address, P.HouseNr, P.City, P.IsAccepted, P.IsActive,  P.ProjectId, P.PeopleNeeded, COUNT(S.UserId) AS PeopleAssigned FROM Project P LEFT JOIN Shift S ON P.ProjectId = S.ProjectId AND S.IsAssigned = 'true' WHERE P.IsActive = 'true' AND P.PeopleNeeded > 0 GROUP BY P.Title, P.Date, P.StartTime, P.EndTime, P.Description, P.Address, P.HouseNr, P.City, P.IsAccepted, P.IsActive, P.ProjectId, P.PeopleNeeded;",
+        request.query("SELECT P.Title, P.Date, P.StartTime, P.EndTime, P.Description, P.Address, P.HouseNr, P.City, P.IsAccepted, P.IsActive,  P.ProjectId, P.PeopleNeeded, COUNT(S.UserId) AS PeopleAssigned FROM Project P LEFT JOIN Shift S ON P.ProjectId = S.ProjectId AND S.IsAssigned = 'true' WHERE P.IsActive = 'true' AND P.IsAccepted = 'true' GROUP BY P.Title, P.Date, P.StartTime, P.EndTime, P.Description, P.Address, P.HouseNr, P.City, P.IsAccepted, P.IsActive, P.ProjectId, P.PeopleNeeded;",
          (error, result) => {
             if (error) {
                 logger.error(error);
