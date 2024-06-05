@@ -81,6 +81,5 @@ router.get("/api/validatetoken", validateToken, loginController.validateToken);
 router.put("/api/update", validateToken, loginController.update);
 
 
-module.exports = router;
 
 module.exports = {router, validateToken};

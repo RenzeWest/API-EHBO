@@ -8,8 +8,6 @@ const logger = require("./src/util/logger");
 // Routes requirements
 
 const projectRoutes = require("./src/routes/project.routes");
-
-
 const loginRoutes = require('./src/routes/login.routes').router;
 const memberRoutes = require('./src/routes/member.routes');
 
