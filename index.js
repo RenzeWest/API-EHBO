@@ -7,7 +7,6 @@ const logger = require("./src/util/logger");
 
 // Routes requirements
 
-const loginRoutes = require("./src/routes/login.routes");
 const projectRoutes = require("./src/routes/project.routes");
 
 
@@ -50,6 +49,7 @@ app.use((req, res, next) => {
 		message: "Route not found",
 		data: {},
 	});
+});
 
 app.use(firstResponderRoutes)
 
