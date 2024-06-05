@@ -1,296 +1,295 @@
-const pool = require('../doa/sql-database');
-const logger = require('../util/logger');
-const sql = require('mssql');
-const jwt = require('jsonwebtoken');
-const jwtSecretKey = require('../util/config').secretkey;
+const pool = require("../doa/sql-database");
+const logger = require("../util/logger");
+const sql = require("mssql");
+const jwt = require("jsonwebtoken");
+const jwtSecretKey = require("../util/config").secretkey;
 
 // Dit is voor hoelang een sessie moet duren
-const sessionDuration = { expiresIn: '12d' } // nu is het dus 1 uur
+const sessionDuration = { expiresIn: "12d" }; // nu is het dus 1 uur
 
 const loginService = {
-    /**
-     * @deprecated - Is om te testen, zou niet moeten worden gebruikt
-     */
-    test: async (callback) => {
-        logger.trace('LoginService -> test');
-        try {
-            const result = await pool.request().query('SELECT * FROM Certificaat');
+	/**
+	 * @deprecated - Is om te testen, zou niet moeten worden gebruikt
+	 */
+	test: async (callback) => {
+		logger.trace("LoginService -> test");
+		try {
+			const result = await pool.request().query("SELECT * FROM Certificaat");
 
-            if (result.recordset) {
-                logger.trace('LoginService -> test: Got a result');
-                callback(null, {
-                    status: 200,
-                    message: 'This is a message',
-                    data: result.recordset
-                });
+			if (result.recordset) {
+				logger.trace("LoginService -> test: Got a result");
+				callback(null, {
+					status: 200,
+					message: "This is a message",
+					data: result.recordset,
+				});
+			}
+		} catch (error) {
+			logger.error(error);
+			callback(error, null);
+		}
+	},
 
-            }
+	/** Method to check if a user exists, if so it will send back a token, with the ID inside of it
+	 * @deprecated - Gebruiker de preparedLogin
+	 */
+	loginDep: async (callback) => {
+		logger.trace("LoginService -> login");
+		try {
+			// Controleer of er een gebruiker met de wachtwoord en email combinatie is
+			const result = await pool.request().query("SELECT GebruikerID FROM Gebruiker WHERE Emailadres = 'rg.westerink@student.avans.nl' AND WachtwoordHash = 'secretPassword'");
 
-        } catch (error) {
-            logger.error(error);
-            callback(error, null);
+			if (result.recordset.length > 0) {
+				// Er is een gebruiker gevonden met de combinatie van wachtwoord en email
+				logger.debug("User has email and password correct");
 
-        }
-    },
+				// Creeër token (Ik weet dat dit in 1 regel kan, maar het is zo makkelijker voor jullie om te snappen, hoop ik...)
+				const gebruikerID = result.recordset[0].GebruikerID; // Haal de ID uit de response
+				const tokenPayload = { userID: gebruikerID };
 
-    /** Method to check if a user exists, if so it will send back a token, with the ID inside of it
-     * @deprecated - Gebruiker de preparedLogin
-     */
-    loginDep: async (callback) => {
-        logger.trace('LoginService -> login');
-        try {
-            // Controleer of er een gebruiker met de wachtwoord en email combinatie is
-            const result = await pool.request().query("SELECT GebruikerID FROM Gebruiker WHERE Emailadres = 'rg.westerink@student.avans.nl' AND WachtwoordHash = 'secretPassword'");
+				// Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
+				jwt.sign(tokenPayload, jwtSecretKey, sessieDuur, (err, token) => {
+					logger.info("User succesfully logged in");
+					callback(null, {
+						status: 200,
+						message: "User logged in",
+						data: {
+							GebruikerID: gebruikerID,
+							SessionToken: token,
+						},
+					});
+				});
+			} else {
+				// Er is geen gebruiker gevonden met de combinatie van wachtwoord en email
+				logger.debug("User does not have the correct password and email");
+				callback(
+					{
+						status: 404,
+						message: "User not found or password invalid",
+						data: {},
+					},
+					null
+				);
+			}
+		} catch (error) {
+			// Er is iets foutgegaan
+			callback(error, null);
+		}
+	},
 
-            if (result.recordset.length > 0) {
-                // Er is een gebruiker gevonden met de combinatie van wachtwoord en email
-                logger.debug('User has email and password correct');
+	login: async (params, callback) => {
+		logger.trace("login.service -> login");
 
-                // Creeër token (Ik weet dat dit in 1 regel kan, maar het is zo makkelijker voor jullie om te snappen, hoop ik...)
-                const gebruikerID = result.recordset[0].GebruikerID; // Haal de ID uit de response
-                const tokenPayload = {userID: gebruikerID}
+		if (!pool.connected) {
+			await pool.connect();
+		}
 
-                // Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
-                jwt.sign(tokenPayload, jwtSecretKey, sessieDuur, (err, token) => {
-                    logger.info('User succesfully logged in');
-                    callback(null, {
-                        status: 200,
-                        message: 'User logged in',
-                        data: {
-                            GebruikerID: gebruikerID,
-                            SessionToken: token
-                        }
-                    });
-                });
-                
-            } else {
-                // Er is geen gebruiker gevonden met de combinatie van wachtwoord en email
-                logger.debug('User does not have the correct password and email');
-                callback({
-                    status: 404,
-                    message: 'User not found or password invalid',
-                    data: {}}, null);
-            }
+		// Get a connection fore the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
 
-        } catch (error) {
-            // Er is iets foutgegaan
-            callback(error, null);
-        }
-    },
+		// Prepare valiables
+		prepStatement.input("password", sql.NVarChar);
+		prepStatement.input("emailaddress", sql.NVarChar);
 
-    login: async (params, callback) => {
-        logger.trace('login.service -> login');
+		// Bereid het statement door
+		prepStatement.prepare("SELECT * FROM Member WHERE Emailaddress = @emailaddress AND Password = @password", (err) => {
+			if (err) {
+				callback(err, null);
+				logger.error(err);
+				return;
+			}
 
-        if (!pool.connected) {
-            await pool.connect();
-        }
+			// Geef de waarden mee en voer uit
+			prepStatement.execute({ password: params.password, emailaddress: params.emailaddress }, (err, result) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
+				logger.debug("Login -> execute");
 
-        // Get a connection fore the prepared statement
-        const prepStatement = new sql.PreparedStatement(pool);
+				// Controlleer of er een gebruiker is gevonden
+				if (result.recordset.length === 0) {
+					logger.info("No user found");
+					callback(
+						{
+							status: 404,
+							message: "User not found or password invalid",
+							data: {},
+						},
+						null
+					);
 
-        // Prepare valiables
-        prepStatement.input('password', sql.NVarChar);
-        prepStatement.input('emailaddress', sql.NVarChar);
+					prepStatement.unprepare((err) => {
+						logger.debug("Login -> statement unprepared");
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						}
+					});
+					return;
+				}
 
-        // Bereid het statement door
-        prepStatement.prepare('SELECT * FROM Member WHERE Emailaddress = @emailaddress AND Password = @password', err => {
-            if (err) {
-                callback(err, null);
-                logger.error(err);
-                return;
-            }
-            
-            // Geef de waarden mee en voer uit
-            prepStatement.execute({password: params.password, emailaddress: params.emailaddress}, (err, result) => {
-                if (err) {
-                    callback(err, null);
-                    logger.error(err);
-                    return;
-                }
-                logger.debug('Login -> execute');
+				// Unprepare statment om connectie vrij te geven
+				prepStatement.unprepare((err) => {
+					logger.debug("Login -> statement unprepared");
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info("Login Succesfull");
 
-                // Controlleer of er een gebruiker is gevonden
-                if (result.recordset.length === 0) {
-                    logger.info('No user found');
-                    callback({
-                        status: 404,
-                        message: 'User not found or password invalid',
-                        data: {}}, null);
+						// Creeër token (UserId wordt herbruikt)
+						const UserId = Number(result.recordset[0].UserId); // Haal de ID uit de response
+						const tokenPayload = { userId: UserId };
 
-                    prepStatement.unprepare(err => {
-                        logger.debug('Login -> statement unprepared');
-                        if (err) {
-                            logger.error(err);
-                            callback(err, null);
-                        }
-                    });
-                    return;
-                }
+						// Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
+						jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
+							logger.info("User has succesfully logged in");
+							callback(null, {
+								status: 200,
+								message: "User has succesfully logged in",
+								data: {
+									UserId: UserId,
+									Permissions: result.recordset[0].Role,
+									SessionToken: token,
+								},
+							});
+						});
+					}
+				});
+			});
+		});
+	},
 
-                // Unprepare statment om connectie vrij te geven
-                prepStatement.unprepare(err => {
-                    logger.debug('Login -> statement unprepared');
-                    if (err) {
-                        logger.error(err);
-                        callback(err, null);
-                        return;
-                    } else {
-                        logger.info('Login Succesfull');
+	/**
+	 * @deprecated -> We gebruiken de minder async variant
+	 * @param {*} params User emailaddress and password
+	 * @param {*} callback
+	 */
+	loginPrepared: async (params, callback) => {
+		logger.trace("LoginService -> LoginPrepared");
 
-                        // Creeër token (UserId wordt herbruikt)
-                        const UserId = Number(result.recordset[0].UserId); // Haal de ID uit de response
-                        const tokenPayload = {userId: UserId};
+		if (!pool.connected) {
+			await pool.connect();
+		}
 
-                        // Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
-                        jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
-                            logger.info('User has succesfully logged in');
-                            callback(null, {
-                                status: 200,
-                                message: 'User has succesfully logged in',
-                                data: {
-                                    UserId: UserId,
-                                    Permissions: result.recordset[0].Role,
-                                    SessionToken: token
-                                }
-                            });
-                        });
-                    }
-                });
-            });
-        });
+		const prepStatement = new sql.PreparedStatement(pool);
 
-    },
+		try {
+			prepStatement.input("emailaddress", sql.VarChar);
+			prepStatement.input("password", sql.VarChar);
+			await prepStatement.prepare("SELECT * FROM Member WHERE Emailaddress = @emailaddress AND Password = @password");
+			const result = await prepStatement.execute({ emailaddress: params.emailaddress, password: params.password });
 
-    /**
-     * @deprecated -> We gebruiken de minder async variant
-     * @param {*} params User emailaddress and password
-     * @param {*} callback 
-     */
-    loginPrepared: async (params, callback) => {
-        logger.trace('LoginService -> LoginPrepared');
+			if (result.recordset.length > 0) {
+				// Er is een gebruiker gevonden met de combinatie van wachtwoord en email
+				logger.debug("User has email and password correct");
 
-        if (!pool.connected) {
-            await pool.connect();
-        }
+				// Creeër token UserId wordt herbruikt
+				const UserId = result.recordset[0].UserId; // Haal de ID uit de response
+				const tokenPayload = { userId: UserId };
 
-        const prepStatement = new sql.PreparedStatement(pool);
+				// Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
+				jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
+					logger.info("User succesfully logged in");
+					callback(null, {
+						status: 200,
+						message: "User logged in",
+						data: {
+							UserId: UserId,
+							Permissions: result.recordset[0].Role,
+							SessionToken: token,
+						},
+					});
+				});
+			} else {
+				// Er is geen gebruiker met de wachtwoord en email combinatie gevonden
+				callback({ status: 404, message: "User not found or password invalid", data: {} }, null);
+			}
+		} catch (error) {
+			logger.error(error);
+			callback(error, null);
+		} finally {
+			logger.debug("Made the finally");
+			await prepStatement.unprepare();
+		}
+	},
 
-        try {
-            prepStatement.input('emailaddress', sql.VarChar);
-            prepStatement.input('password', sql.VarChar);
-            await prepStatement.prepare('SELECT * FROM Member WHERE Emailaddress = @emailaddress AND Password = @password');
-            const result = await prepStatement.execute({emailaddress: params.emailaddress, password: params.password});
+	update: async (userId, params, callback) => {
+		logger.trace("loginService -> update");
 
-            if (result.recordset.length > 0) {
-                // Er is een gebruiker gevonden met de combinatie van wachtwoord en email
-                logger.debug('User has email and password correct');
+		if (!pool.connected) {
+			await pool.connect();
+		}
+		//prepared statement aanmaken
+		const prepStatement = new sql.PreparedStatement(pool);
 
-                // Creeër token UserId wordt herbruikt
-                const UserId = result.recordset[0].UserId; // Haal de ID uit de response
-                const tokenPayload = {userId: UserId}
+		// variabelen aangeven die in prep statement komen
+		prepStatement.input("firstName", sql.NVarChar);
+		prepStatement.input("lastName", sql.NVarChar);
+		prepStatement.input("emailaddress", sql.NVarChar);
+		prepStatement.input("phoneNumber", sql.NVarChar);
+		prepStatement.input("street", sql.NVarChar);
+		prepStatement.input("number", sql.NVarChar);
+		prepStatement.input("postCode", sql.NVarChar);
+		prepStatement.input("city", sql.NVarChar);
+		prepStatement.input("role", sql.NVarChar);
+		prepStatement.input("gender", sql.NVarChar);
+		prepStatement.input("dateOfBirth", sql.Date);
+		prepStatement.input("userID", sql.BigInt);
+		prepStatement.input("invoiceStreet", sql.NVarChar);
+		prepStatement.input("invoiceHouseNr", sql.NVarChar);
+		prepStatement.input("invoiceCity", sql.NVarChar);
+		prepStatement.input("invoiceEmail", sql.NVarChar);
 
-                // Maak de token aan, gooi de payload erin, link de secretkey (wordt gebruikt om hem te versleutelen), zet hoelang het geldig is.
-                jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
-                    logger.info('User succesfully logged in');
-                    callback(null, {
-                        status: 200,
-                        message: 'User logged in',
-                        data: {
-                            UserId: UserId,
-                            Permissions: result.recordset[0].Role,
-                            SessionToken: token
-                        }
-                    });
-                });
-
-            } else {
-                // Er is geen gebruiker met de wachtwoord en email combinatie gevonden
-                callback({status: 404,
-                    message: 'User not found or password invalid',
-                    data: {}}, null);
-            }
-
-        } catch (error) {
-            logger.error(error);
-            callback(error, null);
-        } finally {
-            logger.debug('Made the finally')
-            await prepStatement.unprepare();
-        }
-    },
-
-    
-
-    update: async(userId, params, callback) => {
-        logger.trace('loginService -> update')
-
-        if(!pool.connected) {
-            await pool.connect();
-        }
-        //prepared statement aanmaken
-        const prepStatement = new sql.PreparedStatement(pool);
-
-        // variabelen aangeven die in prep statement komen
-        prepStatement.input('firstName', sql.NVarChar);
-        prepStatement.input('lastName', sql.NVarChar);
-        prepStatement.input('emailaddress', sql.NVarChar);
-        prepStatement.input('phoneNumber', sql.NVarChar);
-        prepStatement.input('street', sql.NVarChar);
-        prepStatement.input('number', sql.NVarChar);
-        prepStatement.input('postCode', sql.NVarChar);
-        prepStatement.input('city', sql.NVarChar);
-        prepStatement.input('role', sql.NVarChar);
-        prepStatement.input('gender', sql.NVarChar);
-        prepStatement.input('dateOfBirth', sql.Date);
-        prepStatement.input('userID', sql.BigInt)
-        //alles aanwezig?
-        if (params.firstName && params.lastName && params.emailaddress && params.phoneNumber && params.street && params.number && params.postCode && params.city && params.role && params.dateOfBirth && params.dateOfBirth && params.gender) {
-            //sql statement in prep statement zetten met variabelen
-            prepStatement.prepare('UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender WHERE UserId = @userID', err => {
-                if (err) {
-                    callback(err, null)
-                    logger.error(err)
-                }
-                logger.debug('prepare')
-                // variabelen toevoegen van params naar prepstatement input variabelen en executen
-                prepStatement.execute({firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId },
-                    (err, result) => {
-                    //TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
-                    if (err) {
-                        callback(err, null)
-                        logger.error(err)
-                    }
-                    logger.debug('execute')
-                    //prep statement unprepare zodat connection terug naar pool gaat
-                    prepStatement.unprepare(err => {
-                        logger.debug('unprepare')
-                        if(err) {
-                            logger.error(err)
-                            callback(err, null)
-                        } else {
-                            logger.info('User updated')
-                            callback(null, {
-                                status: 200,
-                                message: 'User updated',
-                                data: {}
-                            })
-                        }
-                        
-                    })
-                })
-            })
-        } else {
-            callback({
-                status: 400,
-                message: 'Required field missing',
-                data: {}
-            }, null)
-        }
-
-        
-    }
-}
-        
+		//alles aanwezig?
+		if (params.firstName && params.lastName && params.emailaddress && params.phoneNumber && params.street && params.number && params.postCode && params.city && params.role && params.dateOfBirth && params.dateOfBirth && params.gender) {
+			//sql statement in prep statement zetten met variabelen
+			prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoideHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail WHERE UserId = @userID", (err) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+				}
+				logger.debug("prepare");
+				// variabelen toevoegen van params naar prepstatement input variabelen en executen
+				prepStatement.execute({ firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
+					//TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
+					if (err) {
+						callback(err, null);
+						logger.error(err);
+					}
+					logger.debug("execute");
+					//prep statement unprepare zodat connection terug naar pool gaat
+					prepStatement.unprepare((err) => {
+						logger.debug("unprepare");
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						} else {
+							logger.info("User updated");
+							callback(null, {
+								status: 200,
+								message: "User updated",
+								data: {},
+							});
+						}
+					});
+				});
+			});
+		} else {
+			callback(
+				{
+					status: 400,
+					message: "Required field missing",
+					data: {},
+				},
+				null
+			);
+		}
+	},
+};
 
 module.exports = loginService;
 
