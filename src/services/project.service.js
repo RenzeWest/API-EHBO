@@ -1,35 +1,79 @@
 const pool = require("../doa/sql-database");
 const logger = require("../util/logger");
 const sql = require("mssql");
+const moment = require("moment");
 
 const projectService = {
-	test: async (callback) => {
-		logger.trace("ProjectService -> test");
-		try {
-			const pool = await pool.request().query("SELECT * FROM Project");
-
-			if (result.recordset) {
-				logger.trace("ProjectService -> test: Got a result");
-				callback(null, {
-					status: 200,
-					message: "This is a message",
-					data: result.recordset,
-				});
-			}
-		} catch (error) {
-			logger.error(`ProjectService -> test: ${error}`);
-			callback({
-				status: 500,
-				message: "Internal Server Error",
-				data: {},
-			});
-		}
-	},
 	create: async (data, callback) => {
 		logger.trace("ProjectService -> create");
-		try {
-			const pool = await pool.request().input("company", sql.NVarChar, data.name).input("phonenumber", sql.NVarChar, data.phonenumber).input("landlinenumber", sql.NVarChar, data.landlinenumber).input("address", sql.NVarChar, data.adress).input("city", sql.NVarChar, data.city).input("Title", sql.NVarChar, data.Title).input("description", sql.NVarChar, data.description).input("contactperson", sql.NVarChar, data.contactperson).input("contactemail", sql.NVarChar, data.contactemail).input("housenumber", sql.NVarChar, data.housenumber).input("date", sql.DateTime, data.date).input("currentdate", sql.DateTime, date.currentdate).query("INSERT INTO Project (Company, PhoneNumber, LandlineNumber, Address, City, Title, Description, ContactPerson, ContactEmail, HouseNr, DateTime, RequestDate) VALUES (@company, @phonenuber,@landlinenumber, @address, @city , @Title, @description, @contactperson, @contactemail, @housenumber, @date, @currentdate)");
+		console.log("Received data:", data);
 
+		try {
+			// Check if beginTime and endTime are provided and in correct format
+			if (!data.beginTime || !data.endTime) {
+				throw new Error("beginTime and endTime are required");
+			}
+
+			// Extract time values and validate their format
+			const beginTime = moment(data.beginTime.scale, "HH:mm:ss", true);
+			const endTime = moment(data.endTime.scale, "HH:mm:ss", true);
+
+			if (!beginTime.isValid() || !endTime.isValid()) {
+				throw new Error("Invalid time format for beginTime or endTime");
+			}
+
+			// Connect to the database pool
+			const poolPromise = await pool;
+			await poolPromise.connect();
+
+			// Prepare SQL statement
+			const prepStatement = new sql.PreparedStatement(poolPromise);
+			prepStatement.input("company", sql.NVarChar);
+			prepStatement.input("phonenumber", sql.NVarChar);
+			prepStatement.input("landlinenumber", sql.NVarChar);
+			prepStatement.input("adress", sql.NVarChar);
+			prepStatement.input("city", sql.NVarChar);
+			prepStatement.input("title", sql.NVarChar);
+			prepStatement.input("description", sql.NVarChar);
+			prepStatement.input("contactperson", sql.NVarChar);
+			prepStatement.input("contactemail", sql.NVarChar);
+			prepStatement.input("housenumber", sql.NVarChar);
+			prepStatement.input("date", sql.Date);
+			prepStatement.input("currentdate", sql.Date);
+			prepStatement.input("beginTime", sql.NVarChar);
+			prepStatement.input("endTime", sql.NVarChar);
+			prepStatement.input("isActive", sql.Bit);
+			prepStatement.input("isAccepted", sql.Bit);
+
+			await prepStatement.prepare(`
+                INSERT INTO Project 
+                (Company, PhoneNumber, LandlineNumber, Address, City, Title, Description, ContactPerson, ContactEmailAddress, HouseNr, Date, RequestDate, StartTime, EndTime, IsActive, IsAccepted) 
+                VALUES (@company, @phonenumber, @landlinenumber, @adress, @city, @title, @description, @contactperson, @contactemail, @housenumber, @date, @currentdate, @beginTime, @endTime, @isActive, @isAccepted)
+            `);
+
+			// Execute SQL statement
+			const result = await prepStatement.execute({
+				company: data.company,
+				phonenumber: data.phonenumber,
+				landlinenumber: data.landlinenumber,
+				adress: data.adress,
+				city: data.city,
+				title: data.title,
+				description: data.description,
+				contactperson: data.contactperson,
+				contactemail: data.contactemail,
+				housenumber: data.housenumber,
+				date: new Date(data.date),
+				currentdate: new Date(),
+				beginTime: beginTime.format("HH:mm:ss"),
+				endTime: endTime.format("HH:mm:ss"),
+				isActive: 0,
+				isAccepted: 0,
+			});
+
+			await prepStatement.unprepare();
+
+			// Check if project was successfully created
 			if (result.rowsAffected[0] === 1) {
 				logger.trace("ProjectService -> create: Created a project");
 				callback(null, {
@@ -37,58 +81,25 @@ const projectService = {
 					message: "Project created",
 					data: {},
 				});
-			}
-		} catch (error) {
-			logger.error(`ProjectService -> create: ${error}`);
-			callback({
-				status: 500,
-				message: "Internal Server Error",
-				data: {},
-			});
-		}
-	},
-	update: async (id, data, callback) => {
-		logger.trace("ProjectService -> update");
-		try {
-			const pool = await pool.request().input("id", sql.Int, id).input("company", sql.NVarChar, data.name).input("phonenumber", sql.NVarChar, data.phonenumber).input("landlinenumber", sql.NVarChar, data.landlinenumber).input("address", sql.NVarChar, data.adress).input("city", sql.NVarChar, data.city).input("Title", sql.NVarChar, data.Title).input("description", sql.NVarChar, data.description).input("contactperson", sql.NVarChar, data.contactperson).input("contactemail", sql.NVarChar, data.contactemail).input("housenumber", sql.NVarChar, data.housenumber).input("date", sql.DateTime, data.date).query("UPDATE Project SET Company = @company, PhoneNumber = @phonenumber, LandlineNumber = @landlinenumber, Address = @address, City = @city, Title = @Title, Description = @description, ContactPerson = @contactperson, ContactEmail = @contactemail, HouseNr = @housenumber, Date = @date WHERE ID = @id");
-
-			if (result.rowsAffected[0] === 1) {
-				logger.trace("ProjectService -> update: Updated a project");
-				callback(null, {
-					status: 200,
-					message: "Project updated",
+			} else {
+				logger.error("ProjectService -> create: No project created");
+				callback({
+					status: 500,
+					message: "No project created",
 					data: {},
 				});
 			}
 		} catch (error) {
-			logger.error(`ProjectService -> update: ${error}`);
+			// Log and return error
+			logger.error("ProjectService -> create: Error creating project", error);
 			callback({
 				status: 500,
 				message: "Internal Server Error",
 				data: {},
-			});
-		}
-	},
-	delete: async (id, callback) => {
-		logger.trace("ProjectService -> delete");
-		try {
-			const pool = await pool.request().input("id", sql.Int, id).query("DELETE FROM Project WHERE ID = @id");
-
-			if (result.rowsAffected[0] === 1) {
-				logger.trace("ProjectService -> delete: Deleted a project");
-				callback(null, {
-					status: 200,
-					message: "Project deleted",
-					data: {},
-				});
-			}
-		} catch (error) {
-			logger.error(`ProjectService -> delete: ${error}`);
-			callback({
-				status: 500,
-				message: "Internal Server Error",
-				data: {},
+				error: error.message,
 			});
 		}
 	},
 };
+
+module.exports = projectService;

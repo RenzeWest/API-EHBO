@@ -4,7 +4,6 @@ const projectService = require("../services/project.service");
 const projectController = {
 	test: (req, res, next) => {
 		logger.trace("ProjectController -> test");
-		// Call the service
 		projectService.test((error, success) => {
 			if (error) {
 				return next({
