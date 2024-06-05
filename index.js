@@ -38,6 +38,7 @@ app.use(memberRoutes);
 app.use(loginRoutes);
 
 app.use(projectRoutes);
+app.use(firstResponderRoutes)
 
 // Remaining routes
 app.use((req, res, next) => {
@@ -49,7 +50,7 @@ app.use((req, res, next) => {
 	});
 });
 
-app.use(firstResponderRoutes)
+
 
 
 // Remaining routes
