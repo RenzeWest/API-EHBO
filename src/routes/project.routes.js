@@ -28,6 +28,7 @@ function createProject(req, res, next) {
 		chai.expect(body, "Missing currentdate").to.have.property("currentdate");
 		chai.expect(body, "Missing beginTime").to.have.property("beginTime");
 		chai.expect(body, "Missing endTime").to.have.property("endTime");
+		chai.expect(body, "Missing endDate").to.have.property("endDate");
 
 		// Validate and convert date
 		const date = new Date(body.date);

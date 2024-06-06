@@ -38,7 +38,7 @@ const projectService = {
 			prepStatement.input("contactperson", sql.NVarChar);
 			prepStatement.input("contactemail", sql.NVarChar);
 			prepStatement.input("housenumber", sql.NVarChar);
-			prepStatement.input("beginDate", sql.Date);
+			prepStatement.input("date", sql.Date);
 			prepStatement.input("currentdate", sql.Date);
 			prepStatement.input("beginTime", sql.NVarChar);
 			prepStatement.input("endTime", sql.NVarChar);
@@ -48,7 +48,7 @@ const projectService = {
 			await prepStatement.prepare(`
                 INSERT INTO Project 
                 (Company, PhoneNumber, LandlineNumber, Address, City, Title, Description, ContactPerson, ContactEmailAddress, HouseNr, Date, RequestDate, StartTime, EndTime, IsActive, EndDate) 
-                VALUES (@company, @phonenumber, @landlinenumber, @adress, @city, @title, @description, @contactperson, @contactemail, @housenumber, @beginDate, @currentdate, @beginTime, @endTime, @isActive, )
+                VALUES (@company, @phonenumber, @landlinenumber, @adress, @city, @title, @description, @contactperson, @contactemail, @housenumber, @date, @currentdate, @beginTime, @endTime, @isActive, @endDate)
             `);
 
 			// Execute SQL statement
@@ -63,15 +63,12 @@ const projectService = {
 				contactperson: data.contactperson,
 				contactemail: data.contactemail,
 				housenumber: data.housenumber,
-				date: new Date(data.beginDate),
+				date: new Date(data.date),
 				currentdate: new Date(),
 				beginTime: beginTime.format("HH:mm:ss"),
 				endTime: endTime.format("HH:mm:ss"),
 				isActive: 0,
-<<<<<<< Updated upstream
-=======
-				endDate: date(data.endDate),
->>>>>>> Stashed changes
+				endDate: new Date(data.endDate),
 			});
 
 			await prepStatement.unprepare();
