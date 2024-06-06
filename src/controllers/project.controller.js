@@ -103,22 +103,27 @@ const projectController = {
     },
 
 	getProject: (req, res, next) => {
-		logger.trace('projectController -> getAllUndecidedProject');
-		if(error) {
-			return next({
-				status: error.status,
-				message: error.message,
-				data: {}
-			})
-		}
-		if (succes) {
-			res.status(200).json({
-				status: succes.status,
-				message: succes.message || 'Hoi',
-				data: succes.data || 'Hoi'
-			})
-		}
-	}
+        logger.trace('projectController -> getProject');
+
+        projectService.getProject(req.body.projectId, (error, succes) => {
+            if (error) {
+                logger.error(error);
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message || 'Hoi',
+                    data: succes.data || 'Hoi'
+                })
+            }
+        });
+
+    }
 };
 
 module.exports = projectController;

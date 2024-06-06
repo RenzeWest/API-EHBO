@@ -173,74 +173,76 @@ const projectService = {
 		});
 	},
 
-	getProject: async(projectId, callback) => {
+	getProject: async (projectId, callback) => {
+		logger.trace(projectId);
 		logger.trace('projectService -> getProject');
-            
-        if (!pool.connected) {
-            await pool.connect();
-        }
-
-        // Get a connection fore the prepared statement
-        const prepStatement = new sql.PreparedStatement(pool);
-
-        // Prepare valiables
-        prepStatement.input('projectId', sql.BigInt);
-
-		// Bereid het statement door
-        prepStatement.prepare('SELECT * FROM Project WHERE ProjectId = @projectId', err => {
-            if (err) {
-                logger.error(err);
-                callback(err, null);
-                return;
-            }
-
-            prepStatement.execute({projectId: projectId}, (err, result) => {
-                if (err) {
-                    logger.error(err);
-                    callback(err, null);
-                    return;
-                }
-                logger.debug('getProject -> execute');
-
-                // Controlleer of er een project is gevonden
-                if (result.recordset.length === 0) {
-                    logger.info('No project found');
-                    callback({
-                        status: 404,
-                        message: 'Project not found',
-                        data: {}}, null);
-
-                    prepStatement.unprepare(err => {
-                        logger.debug('getProject -> statement unprepared');
-                        if (err) {
-                            logger.error(err);
-                            callback(err, null);
-                        }
-                    });
-                    return;
-                }
-
-                // Unprepare statment om connectie vrij te geven
-                prepStatement.unprepare(err => {
-                    logger.debug('getProject -> statement unprepared');
-                    if (err) {
-                        logger.error(err);
-                        callback(err, null);
-                        return;
-                    } else {
-                        logger.info('getProject Succesfull');
-                        const noPassword = result.recordset[0];
-                        delete noPassword.Password;
-
-                        callback(null, {
-                            status: 200,
-                            message: `Project found with id ${projectId}`,
-                            data: result.recordset[0]
-                        });
-                    }
-                });
-            });
-        });
+	
+		if (!pool.connected) {
+			await pool.connect();
+		}
+	
+		// Get a connection for the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+	
+		// Prepare variables
+		prepStatement.input('projectId', sql.BigInt);
+	
+		// Prepare the statement
+		prepStatement.prepare('SELECT * FROM Project WHERE ProjectId = @projectId', (err) => {
+			if (err) {
+				logger.error(err);
+				callback(err, null);
+				return;
+			}
+			console.log(projectId)
+			prepStatement.execute({ projectId: projectId }, (err, result) => {
+				if (err) {
+					logger.error(err);
+					callback(err, null);
+					return;
+				}
+				logger.debug('getProject -> execute');
+	
+				// Check if a project is found
+				if (result.recordset.length === 0) {
+					logger.info('No project found');
+					callback({
+						status: 404,
+						message: 'Project not found',
+						data: {}
+					}, null);
+	
+					prepStatement.unprepare((err) => {
+						logger.debug('getProject -> statement unprepared');
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						}
+					});
+					return;
+				}
+	
+				// Unprepare statement to release connection
+				prepStatement.unprepare((err) => {
+					logger.debug('getProject -> statement unprepared');
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info('getProject Successful');
+						const noPassword = result.recordset[0];
+						delete noPassword.Password;
+	
+						callback(null, {
+							status: 200,
+							message: `Project found with id ${projectId}`,
+							data: result.recordset[0]
+						});
+					}
+				});
+			});
+		});
 	}
 }
 
