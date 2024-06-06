@@ -68,7 +68,6 @@ const projectService = {
 				beginTime: beginTime.format("HH:mm:ss"),
 				endTime: endTime.format("HH:mm:ss"),
 				isActive: 0,
-				isAccepted: 0,
 			});
 
 			await prepStatement.unprepare();
