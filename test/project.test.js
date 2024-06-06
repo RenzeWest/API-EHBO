@@ -35,6 +35,7 @@ describe("UC: Create Project Tests", () => {
 				currentdate: "01-01-2025",
 				beginTime: "12:00",
 				endTime: "14:00",
+				endDate: "08-01-2025",
 			})
 			.end((err, res) => {
 				chai.expect(res).to.have.status(200);
