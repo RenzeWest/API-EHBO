@@ -255,7 +255,7 @@ const loginService = {
 				}
 				logger.debug("prepare");
 				// variabelen toevoegen van params naar prepstatement input variabelen en executen
-				prepStatement.execute({ firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
+				prepStatement.execute({ firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, password: params.password, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
 					//TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
 					if (err) {
 						callback(err, null);
