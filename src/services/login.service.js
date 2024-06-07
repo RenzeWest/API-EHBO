@@ -232,6 +232,7 @@ const loginService = {
 		prepStatement.input("emailaddress", sql.NVarChar);
 		prepStatement.input("password", sql.NVarChar);
 		prepStatement.input("phoneNumber", sql.NVarChar);
+		prepStatement.input("newPassword", sql.NVarChar);
 		prepStatement.input("street", sql.NVarChar);
 		prepStatement.input("number", sql.NVarChar);
 		prepStatement.input("postCode", sql.NVarChar);
@@ -248,7 +249,7 @@ const loginService = {
 		//alles aanwezig?
 		if (params.firstName && params.lastName && params.emailaddress && params.password && params.phoneNumber && params.street && params.number && params.postCode && params.city && params.role && params.dateOfBirth && params.dateOfBirth && params.gender) {
 			//sql statement in prep statement zetten met variabelen
-			prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, Password = @password ,PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoideHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail WHERE UserId = @userID && Password = @password", (err) => {
+			prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, Password = @newPassword ,PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoideHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail WHERE UserId = @userID && Password = @password", (err) => {
 				if (err) {
 					callback(err, null);
 					logger.error(err);
