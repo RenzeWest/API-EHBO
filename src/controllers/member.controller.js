@@ -17,8 +17,8 @@ const memberContoller = {
             if (succes) {
                 res.status(200).json({
                     status: succes.status,
-                    message: succes.message || 'Hoi',
-                    data: succes.data || 'Hoi'
+                    message: succes.message,
+                    data: succes.data
                 })
             }
         });
