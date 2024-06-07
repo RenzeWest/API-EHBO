@@ -104,25 +104,34 @@ const projectController = {
 
 	getProject: (req, res, next) => {
         logger.trace('projectController -> getProject');
+        
+        const projectId = req.query.projectId; // Read the projectId from the query parameters
 
-        projectService.getProject(req.body.projectId, (error, succes) => {
+        if (!projectId) {
+            return res.status(400).json({
+                status: 400,
+                message: 'ProjectId is required',
+                data: {}
+            });
+        }
+
+        projectService.getProject(projectId, (error, success) => {
             if (error) {
                 logger.error(error);
                 return next({
                     status: error.status,
                     message: error.message,
                     data: {}
-                })
+                });
             }
-            if (succes) {
+            if (success) {
                 res.status(200).json({
-                    status: succes.status,
-                    message: succes.message || 'Hoi',
-                    data: succes.data || 'Hoi'
-                })
+                    status: success.status,
+                    message: success.message || 'Success',
+                    data: success.data || 'No data found'
+                });
             }
         });
-
     }
 };
 
