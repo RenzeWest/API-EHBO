@@ -247,7 +247,7 @@ const loginService = {
 		prepStatement.input("invoiceEmail", sql.NVarChar);
 
 		//alles aanwezig?
-		if (params.firstName && params.lastName && params.emailaddress && params.password && params.phoneNumber && params.street && params.number && params.postCode && params.city && params.role && params.dateOfBirth && params.dateOfBirth && params.gender) {
+		if (params.firstName && params.lastName && params.emailaddress && params.password && params.newPassword && params.phoneNumber && params.street && params.number && params.postCode && params.city && params.role && params.dateOfBirth && params.dateOfBirth && params.gender) {
 			//sql statement in prep statement zetten met variabelen
 			prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, Password = @newPassword ,PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city, Role = @role, DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoideHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail WHERE UserId = @userID && Password = @password", (err) => {
 				if (err) {
@@ -256,7 +256,7 @@ const loginService = {
 				}
 				logger.debug("prepare");
 				// variabelen toevoegen van params naar prepstatement input variabelen en executen
-				prepStatement.execute({ firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, password: params.password, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
+				prepStatement.execute({ firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, password: params.password, newPassword: params.newPassword, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, role: params.role, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId }, (err, result) => {
 					//TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
 					if (err) {
 						callback(err, null);
