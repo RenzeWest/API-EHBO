@@ -54,28 +54,72 @@ const memberService = {
 					return;
 				}
 
-				// Unprepare statment om connectie vrij te geven
-				prepStatement.unprepare((err) => {
-					logger.debug("getMember -> statement unprepared");
-					if (err) {
-						logger.error(err);
-						callback(err, null);
-						return;
-					} else {
-						logger.info("getMember Succesfull");
-						const noPassword = result.recordset[0];
-						delete noPassword.Password;
+                // Unprepare statment om connectie vrij te geven
+                prepStatement.unprepare(err => {
+                    logger.debug('getMember -> statement unprepared');
+                    if (err) {
+                        logger.error(err);
+                        callback(err, null);
+                        return;
+                    } else {
 
-						callback(null, {
-							status: 200,
-							message: `User found with id ${userId}`,
-							data: result.recordset[0],
-						});
-					}
-				});
-			});
-		});
-	},
-};
+                        const baseData = result.recordset[0];
+                        delete baseData.Password;
+                        console.log(baseData);
+                        prepStatement.prepare('SELECT * FROM ObtainedCertificates WHERE UserId = @userId', err => {
+                            if(err) {
+                                logger.error(err);
+                                callback(err, null);
+                                return;
+                            }
+
+                            prepStatement.execute({userId: userId}, (err, res) => {
+                                if (err) {
+                                    logger.error(err);
+                                    callback(err, null);
+                                    return;
+                                }
+
+                                let certifications = '';
+                                if (res.recordset[0] === undefined) {
+                                    certifications = 'Gebruiker heeft geen certificaten';
+                                } else {
+                                    for (let i = 0; i < res.recordset.length; i++) {
+                                        certifications += res.recordset[i].CertificateTitle;
+                                        if (i !== res.recordset.length - 1) {
+                                            certifications += ', ';
+                                        }
+                                    }
+                                }
+
+                                prepStatement.unprepare(err => {
+                                    if(err) {
+                                        logger.error(err);
+                                        callback(err, null);
+                                        return;
+                                    }
+
+                                    baseData.certification = certifications;
+
+                                    logger.info('getMember Succesfull');
+                                    callback(null, {
+                                        status: 200,
+                                        message: `User found with id ${userId}`,
+                                        data: baseData
+                                    });
+
+                                });
+
+                            });
+
+                        });
+
+
+                    }
+                });
+            });
+        });
+    }
+}
 
 module.exports = memberService;
