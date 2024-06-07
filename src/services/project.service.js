@@ -165,7 +165,7 @@ const projectService = {
 						callback(null, {
 							status: 200,
 							message: `Projects found`,
-							data: result.recordset[0]
+							data: result.recordset
 						});
 					}
 				});
