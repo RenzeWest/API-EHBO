@@ -249,7 +249,7 @@ const loginService = {
 		//alles aanwezig?
 
 		//sql statement in prep statement zetten met variabelen
-		prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, Password = @newPassword ,PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city,  DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoideHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail, LandLine = @landLine WHERE UserId = @userID && Password = @password", (err) => {
+		prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, Password = @newPassword ,PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city,  DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoiceHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail, LandLine = @landLine WHERE UserId = @userID && Password = @password", (err) => {
 			if (err) {
 				callback(err, null);
 				logger.error(err);
