@@ -223,10 +223,9 @@ const loginService = {
 		if (!pool.connected) {
 			await pool.connect();
 		}
-		//prepared statement aanmaken
+
 		const prepStatement = new sql.PreparedStatement(pool);
 
-		// variabelen aangeven die in prep statement komen
 		prepStatement.input("firstName", sql.NVarChar);
 		prepStatement.input("lastName", sql.NVarChar);
 		prepStatement.input("emailaddress", sql.NVarChar);
@@ -246,6 +245,30 @@ const loginService = {
 		prepStatement.input("invoiceEmail", sql.NVarChar);
 		prepStatement.input("landLine", sql.NVarChar);
 
+<<<<<<< HEAD
+		prepStatement.prepare(
+			`UPDATE Member SET 
+				FirstName = @firstName, 
+				LastName = @lastName, 
+				Emailaddress = @emailaddress, 
+				Password = @newPassword, 
+				PhoneNumber = @phoneNumber, 
+				Street = @street, 
+				HouseNr = @number, 
+				PostCode = @postCode, 
+				City = @city,  
+				DateOfBirth = @dateOfBirth, 
+				Gender = @gender, 
+				InvoiceStreet = @invoiceStreet, 
+				InvoiceHouseNr = @invoiceHouseNr, 
+				InvoiceCity = @invoiceCity, 
+				InvoiceEmail = @invoiceEmail, 
+				LandLine = @landLine 
+			WHERE 
+				UserId = @userId AND 
+				Password = @password`,
+			(err) => {
+=======
 		//alles aanwezig?
 
 		//sql statement in prep statement zetten met variabelen
@@ -261,25 +284,66 @@ const loginService = {
 				if (err) {
 					callback(err, null);
 					logger.error(err);
+					return;
 				}
-				logger.debug("execute");
-				//prep statement unprepare zodat connection terug naar pool gaat
-				prepStatement.unprepare((err) => {
-					logger.debug("unprepare");
-					if (err) {
-						logger.error(err);
-						callback(err, null);
-					} else {
-						logger.info("User updated");
-						callback(null, {
-							status: 200,
-							message: "User updated",
-							data: {},
+				logger.debug("prepare");
+
+				prepStatement.execute(
+					{
+						firstName: params.firstName,
+						lastName: params.lastName,
+						emailaddress: params.emailaddress,
+						newPassword: params.newPassword,
+						phoneNumber: params.phoneNumber,
+						street: params.street,
+						number: params.number,
+						postCode: params.postCode,
+						city: params.city,
+						dateOfBirth: params.dateOfBirth,
+						gender: params.gender,
+						userId: userId,
+						password: params.password,
+						landLine: params.landLine,
+						invoiceCity: params.invoiceCity,
+						invoiceStreet: params.invoiceStreet,
+						invoiceHouseNr: params.invoiceHouseNr,
+						invoiceEmail: params.invoiceEmail,
+					},
+					(err, result) => {
+						if (err) {
+							callback(err, null);
+							logger.error(err);
+							return;
+						}
+						logger.debug("execute");
+
+						prepStatement.unprepare((err) => {
+							const affectedRows = result.rowsAffected[0];
+							logger.info(`Rows affected: ${affectedRows}`);
+							logger.debug("unprepare");
+							if (affectedRows === 0) {
+								logger.error("No rows updated");
+								callback(null, {
+									status: 404,
+									message: "User not found",
+									data: {},
+								});
+							} else if (err) {
+								logger.error(err);
+								callback(err, null);
+							} else {
+								logger.info("User updated");
+								callback(null, {
+									status: 200,
+									message: "User updated",
+									data: {},
+								});
+							}
 						});
 					}
-				});
-			});
-		});
+				);
+			}
+		);
 	},
 };
 
