@@ -218,132 +218,151 @@ const loginService = {
 	},
 
 	update: async (userId, params, callback) => {
-		logger.trace("loginService -> update");
+		logger.trace("LoginService -> update");
 
 		if (!pool.connected) {
 			await pool.connect();
 		}
 
+		// Get a connection fore the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
 
-		prepStatement.input("firstName", sql.NVarChar);
-		prepStatement.input("lastName", sql.NVarChar);
+		// Prepare valiables
+		prepStatement.input("userId", sql.BigInt);
 		prepStatement.input("emailaddress", sql.NVarChar);
 		prepStatement.input("password", sql.NVarChar);
-		prepStatement.input("phoneNumber", sql.NVarChar);
 		prepStatement.input("newPassword", sql.NVarChar);
+		prepStatement.input("firstName", sql.NVarChar);
+		prepStatement.input("lastName", sql.NVarChar);
 		prepStatement.input("street", sql.NVarChar);
-		prepStatement.input("number", sql.NVarChar);
+		prepStatement.input("houseNumber", sql.NVarChar);
 		prepStatement.input("postCode", sql.NVarChar);
 		prepStatement.input("city", sql.NVarChar);
+		prepStatement.input("phoneNumber", sql.NVarChar);
 		prepStatement.input("gender", sql.NVarChar);
-		prepStatement.input("dateOfBirth", sql.Date);
-		prepStatement.input("userId", sql.BigInt);
+		prepStatement.input("dateOfBirth", sql.NVarChar);
+		prepStatement.input("invoiceEmail", sql.NVarChar);
 		prepStatement.input("invoiceStreet", sql.NVarChar);
 		prepStatement.input("invoiceHouseNr", sql.NVarChar);
 		prepStatement.input("invoiceCity", sql.NVarChar);
-		prepStatement.input("invoiceEmail", sql.NVarChar);
-		prepStatement.input("landLine", sql.NVarChar);
 
-		prepStatement.prepare(
-			`UPDATE Member SET 
-				FirstName = @firstName, 
-				LastName = @lastName, 
-				Emailaddress = @emailaddress, 
-				Password = @newPassword, 
-				PhoneNumber = @phoneNumber, 
-				Street = @street, 
-				HouseNr = @number, 
-				PostCode = @postCode, 
-				City = @city,  
-				DateOfBirth = @dateOfBirth, 
-				Gender = @gender, 
-				InvoiceStreet = @invoiceStreet, 
-				InvoiceHouseNr = @invoiceHouseNr, 
-				InvoiceCity = @invoiceCity, 
-				InvoiceEmail = @invoiceEmail, 
-				LandLine = @landLine 
-			WHERE 
-				UserId = @userId AND 
-				Password = @password`,
-			(err) => {
-				//alles aanwezig?
+		if (params.newPassword) {
+			// Bereid het statement door
+			prepStatement.prepare("UPDATE Member SET Emailaddress = @emailaddress, Password = @newPassword, FirstName = @firstName, LastName = @lastName, Street = @street, HouseNr = @houseNumber, PostCode = @postCode, City = @city, PhoneNumber = @phoneNumber, Gender = @gender, DateOfBirth = @dateOfBirth, InvoiceEmail = @invoiceEmail, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoiceHouseNr, InvoiceCity = @invoiceCity WHERE UserId = @userId AND Password = @password", (err) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
 
-				//sql statement in prep statement zetten met variabelen
-				prepStatement.prepare("UPDATE Member SET FirstName = @firstName, LastName = @lastName, Emailaddress = @emailaddress, Password = @newPassword ,PhoneNumber = @phoneNumber, Street = @street, HouseNr = @number, PostCode = @postCode, City = @city,  DateOfBirth = @dateOfBirth, Gender = @gender, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoiceHouseNr, InvoiceCity = @invoiceCity, InvoiceEmail = @invoiceEmail, LandLine = @landLine WHERE UserId = @userId AND Password = @password", (err) => {
+				// Geef de waarden mee en voer uit
+				prepStatement.execute({ userId: userId, emailaddress: params.emailaddress, password: params.password, newPassword: params.newPassword, firstName: params.firstName, lastName: params.lastName, street: params.street, houseNumber: params.houseNumber, postCode: params.postCode, city: params.city, phoneNumber: params.phoneNumber, gender: params.gender, dateOfBirth: params.dateOfBirth, invoiceEmail: params.invoiceEmail, invoiceHouseNr: params.invoiceHouseNr, invoiceStreet: params.invoiceStreet, invoiceCity: params.invoiceCity }, (err, result) => {
 					if (err) {
 						callback(err, null);
 						logger.error(err);
+						return;
 					}
-					logger.debug("prepare");
-					// variabelen toevoegen van params naar prepstatement input variabelen en executen
-					prepStatement.execute({ firstName: params.firstName, lastName: params.lastName, emailaddress: params.emailaddress, newPassword: params.newPassword, phoneNumber: params.phoneNumber, street: params.street, number: params.number, postCode: params.postCode, city: params.city, dateOfBirth: params.dateOfBirth, gender: params.gender, userID: userId, password: params.password, landLine: params.landLine, invoiceCity: params.invoiceCity, invoiceStreet: params.invoiceStreet, invoiceHouseNr: params.invoiceHouseNr, invoiceEmail: params.invoiceEmail }, (err, result) => {
-						//TO-DO hardcoded userId eruit(kan nadat user aangemaakt kan worden)
-						if (err) {
-							callback(err, null);
-							logger.error(err);
-							return;
-						}
-						logger.debug("prepare");
+					logger.debug("Update -> execute");
 
-						prepStatement.execute(
+					// Controlleer of er een gebruiker is gevonden
+					if (result.rowsAffected[0] === 0) {
+						logger.info("No user found");
+						callback(
 							{
-								firstName: params.firstName,
-								lastName: params.lastName,
-								emailaddress: params.emailaddress,
-								newPassword: params.newPassword,
-								phoneNumber: params.phoneNumber,
-								street: params.street,
-								number: params.number,
-								postCode: params.postCode,
-								city: params.city,
-								dateOfBirth: params.dateOfBirth,
-								gender: params.gender,
-								userId: userId,
-								password: params.password,
-								landLine: params.landLine,
-								invoiceCity: params.invoiceCity,
-								invoiceStreet: params.invoiceStreet,
-								invoiceHouseNr: params.invoiceHouseNr,
-								invoiceEmail: params.invoiceEmail,
+								status: 404,
+								message: "User not found",
+								data: {},
 							},
-							(err, result) => {
-								if (err) {
-									callback(err, null);
-									logger.error(err);
-									return;
-								}
-								logger.debug("execute");
-
-								prepStatement.unprepare((err) => {
-									const affectedRows = result.rowsAffected[0];
-									logger.info(`Rows affected: ${affectedRows}`);
-									logger.debug("unprepare");
-									if (affectedRows === 0) {
-										logger.error("No rows updated");
-										callback(null, {
-											status: 404,
-											message: "User not found",
-											data: {},
-										});
-									} else if (err) {
-										logger.error(err);
-										callback(err, null);
-									} else {
-										logger.info("User updated");
-										callback(null, {
-											status: 200,
-											message: "User updated",
-											data: {},
-										});
-									}
-								});
-							}
+							null
 						);
+
+						prepStatement.unprepare((err) => {
+							logger.debug("Update -> statement unprepared");
+							if (err) {
+								logger.error(err);
+								callback(err, null);
+							}
+						});
+						return;
+					}
+
+					// Unprepare statment om connectie vrij te geven
+					prepStatement.unprepare((err) => {
+						logger.debug("Update -> statement unprepared");
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+							return;
+						} else {
+							logger.info("User has been updated");
+							callback(null, {
+								status: 200,
+								message: "User has been updated",
+								data: {},
+							});
+						}
 					});
 				});
-			}
-		);
+			});
+		} else {
+			// Bereid het statement door
+			prepStatement.prepare("UPDATE Member SET Emailaddress = @emailaddress, FirstName = @firstName, LastName = @lastName, Street = @street, HouseNr = @houseNumber, PostCode = @postCode, City = @city, PhoneNumber = @phoneNumber, Gender = @gender, DateOfBirth = @dateOfBirth, InvoiceEmail = @invoiceEmail, InvoiceStreet = @invoiceStreet, InvoiceHouseNr = @invoiceHouseNr, InvoiceCity = @invoiceCity WHERE UserId = @userId AND Password = @password", (err) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
+
+				// Geef de waarden mee en voer uit
+				prepStatement.execute({ userId: userId, emailaddress: params.emailaddress, password: params.password, firstName: params.firstName, lastName: params.lastName, street: params.street, houseNumber: params.houseNumber, postCode: params.postCode, city: params.city, phoneNumber: params.phoneNumber, gender: params.gender, dateOfBirth: params.dateOfBirth, invoiceEmail: params.invoiceEmail, invoiceHouseNr: params.invoiceHouseNr, invoiceStreet: params.invoiceStreet, invoiceCity: params.invoiceCity }, (err, result) => {
+					if (err) {
+						callback(err, null);
+						logger.error(err);
+						return;
+					}
+					logger.debug("Update -> execute");
+
+					// Controlleer of er een gebruiker is gevonden
+					if (result.rowsAffected[0] === 0) {
+						logger.info("No user found");
+						callback(
+							{
+								status: 404,
+								message: "User not found",
+								data: {},
+							},
+							null
+						);
+
+						prepStatement.unprepare((err) => {
+							logger.debug("Update -> statement unprepared");
+							if (err) {
+								logger.error(err);
+								callback(err, null);
+							}
+						});
+						return;
+					}
+
+					// Unprepare statment om connectie vrij te geven
+					prepStatement.unprepare((err) => {
+						logger.debug("Update -> statement unprepared");
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+							return;
+						} else {
+							logger.info("User has been updated");
+							callback(null, {
+								status: 200,
+								message: "User has been updated",
+								data: {},
+							});
+						}
+					});
+				});
+			});
+		}
 	},
 };
 
