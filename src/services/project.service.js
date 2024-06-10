@@ -167,14 +167,12 @@ const projectService = {
 				callback(null, {
 					status: 200,
 					message: "Project accepted",
-					data: {},
 				});
 			} else {
 				logger.error("ProjectService -> acceptProject: Project not accepted");
 				callback({
 					status: 404,
 					message: "Project not accepted",
-					data: {},
 				});
 			}
 		} catch (error) {
@@ -182,7 +180,6 @@ const projectService = {
 			callback({
 				status: 500,
 				message: "Internal Server Error",
-				data: {},
 				error: error.message,
 			});
 		}
@@ -205,14 +202,12 @@ const projectService = {
 				callback(null, {
 					status: 200,
 					message: "Project rejected",
-					data: {},
 				});
 			} else {
 				logger.error("ProjectService -> rejectProject: Project not rejected");
 				callback({
 					status: 404,
 					message: "Project not rejected",
-					data: {},
 				});
 			}
 		} catch (error) {
@@ -220,7 +215,6 @@ const projectService = {
 			callback({
 				status: 500,
 				message: "Internal Server Error",
-				data: {},
 				error: error.message,
 			});
 		}

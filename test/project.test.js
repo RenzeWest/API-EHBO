@@ -33,9 +33,10 @@ describe("UC: Create Project Tests", () => {
 				date: "08-01-2025",
 				title: "Test",
 				currentdate: "01-01-2025",
-				beginTime: "12:00",
-				endTime: "14:00",
+				beginTime: "12:00:00",
+				endTime: "14:00:00",
 				endDate: "08-01-2025",
+				isActive: 0,
 			})
 			.end((err, res) => {
 				chai.expect(res).to.have.status(200);
@@ -270,55 +271,116 @@ describe("UC: Create Project Tests", () => {
 				chai.expect(body).to.have.property("data").that.is.a("object").is.empty;
 				done();
 			});
-		it("TC 11: Project not created because of missing title", (done) => {
-			chai.request(server)
-				.post(endpointToTest)
-				.send({
-					company: "Avans",
-					description: "Dit is een test",
-					city: "Breda",
-					adress: "Hogeschoollaan",
-					contactperson: "Rik",
-					contactemail: "r.ik@student.avans.nl",
-					phonenumber: "0612345678",
-					landlinenumber: "0761234567",
-					housenumber: "108",
-					date: "2021-13-01",
-					currentday: "2021-06-01",
-				})
-				.end((err, res) => {
-					chai.expect(res).to.have.status(400);
-					const body = res.body;
-					chai.expect(body).to.have.property("status").that.is.a("number").equals(400);
-					chai.expect(body).to.have.property("message").that.is.a("string").equals("Missing title");
-					chai.expect(body).to.have.property("data").that.is.a("object").is.empty;
-					done();
-				});
-		});
-		it("TC 12: Project not created because of missing currentday", (done) => {
-			chai.request(server)
-				.post(endpointToTest)
-				.send({
-					company: "Avans",
-					description: "Dit is een test",
-					city: "Breda",
-					adress: "Hogeschoollaan",
-					contactperson: "Rik",
-					contactemail: "r.ik@student.avans.nl",
-					phonenumber: "0612345678",
-					landlinenumber: "0761234567",
-					housenumber: "108",
-					date: "2021-13-01",
-					title: "Test",
-				})
-				.end((err, res) => {
-					chai.expect(res).to.have.status(400);
-					const body = res.body;
-					chai.expect(body).to.have.property("status").that.is.a("number").equals(400);
-					chai.expect(body).to.have.property("message").that.is.a("string").equals("Missing currentday");
-					chai.expect(body).to.have.property("data").that.is.a("object").is.empty;
-					done();
-				});
-		});
+	});
+	it("TC 11: Project not created because of missing title", (done) => {
+		chai.request(server)
+			.post(endpointToTest)
+			.send({
+				company: "Avans",
+				description: "Dit is een test",
+				city: "Breda",
+				adress: "Hogeschoollaan",
+				contactperson: "Rik",
+				contactemail: "r.ik@student.avans.nl",
+				phonenumber: "0612345678",
+				landlinenumber: "0761234567",
+				housenumber: "108",
+				date: "2021-13-01",
+				currentday: "2021-06-01",
+			})
+			.end((err, res) => {
+				chai.expect(res).to.have.status(400);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(400);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Missing title");
+				chai.expect(body).to.have.property("data").that.is.a("object").is.empty;
+				done();
+			});
+	});
+	it("TC 12: Project not created because of missing currentday", (done) => {
+		chai.request(server)
+			.post(endpointToTest)
+			.send({
+				company: "Avans",
+				description: "Dit is een test",
+				city: "Breda",
+				adress: "Hogeschoollaan",
+				contactperson: "Rik",
+				contactemail: "r.ik@student.avans.nl",
+				phonenumber: "0612345678",
+				landlinenumber: "0761234567",
+				housenumber: "108",
+				date: "2021-13-01",
+				title: "Test",
+			})
+			.end((err, res) => {
+				chai.expect(res).to.have.status(400);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(400);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Missing currentdate");
+				chai.expect(body).to.have.property("data").that.is.a("object").is.empty;
+				done();
+			});
+	});
+});
+describe("UC: Get Unwatched Projects Tests", () => {
+	beforeEach(async () => {
+		console.log("Before each test");
+	});
+
+	it("TC 1: Get Unwatched Projects Successfully", (done) => {
+		chai.request(server)
+			.get("/api/getUnwatchedProjects")
+			.end((err, res) => {
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Projects retrieved");
+				chai.expect(body).to.have.property("data").that.is.a("array").that.is.not.empty;
+				done();
+			});
+	});
+});
+
+describe("UC: Set Project Accepted Tests", () => {
+	beforeEach(async () => {
+		console.log("Before each test");
+	});
+
+	it("TC 1: Set Project Accepted Successfully", (done) => {
+		chai.request(server)
+			.put("/api/acceptproject")
+			.send({
+				projectId: 1,
+			})
+			.end((err, res) => {
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Project accepted");
+				done();
+			});
+	});
+});
+
+describe("UC: Reject Project Tests", () => {
+	beforeEach(async () => {
+		console.log("Before each test");
+	});
+
+	it("TC 1: Project rejected", (done) => {
+		chai.request(server)
+			.put("/api/rejectproject")
+			.send({
+				projectId: 1,
+			})
+			.end((err, res) => {
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Project rejected");
+
+				done();
+			});
 	});
 });
