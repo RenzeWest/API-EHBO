@@ -2,6 +2,7 @@ const pool = require("../doa/sql-database");
 const logger = require("../util/logger");
 const sql = require("mssql");
 const moment = require("moment");
+const { rejectProject } = require("../controllers/project.controller");
 
 const projectService = {
 	create: async (data, callback) => {
@@ -147,28 +148,20 @@ const projectService = {
 			});
 		}
 	},
-	acceptProject: async (projectId, callback) => {
+	acceptProject: async (data, callback) => {
 		logger.trace("ProjectService -> acceptProject");
 
 		try {
-			// Connect to the database pool
 			const poolPromise = await pool;
 			await poolPromise.connect();
 
-			// Prepare SQL statement
 			const prepStatement = new sql.PreparedStatement(poolPromise);
-			prepStatement.input("projectId", sql.Int);
-
+			prepStatement.input("projectId", sql.BigInt);
 			await prepStatement.prepare(`
 				UPDATE Project SET IsAccepted = 1 WHERE ProjectId = @projectId
 			`);
-
-			// Execute SQL statement
-			const result = await prepStatement.execute({ projectId });
-
+			const result = await prepStatement.execute({ projectId: data.projectId });
 			await prepStatement.unprepare();
-
-			// Check if project was successfully accepted
 			if (result.rowsAffected[0] === 1) {
 				logger.trace("ProjectService -> acceptProject: Project accepted");
 				callback(null, {
@@ -177,15 +170,14 @@ const projectService = {
 					data: {},
 				});
 			} else {
-				logger.error("ProjectService -> acceptProject: No project accepted");
+				logger.error("ProjectService -> acceptProject: Project not accepted");
 				callback({
-					status: 500,
-					message: "No project accepted",
+					status: 404,
+					message: "Project not accepted",
 					data: {},
 				});
 			}
 		} catch (error) {
-			// Log and return error
 			logger.error("ProjectService -> acceptProject: Error accepting project", error);
 			callback({
 				status: 500,
@@ -195,28 +187,19 @@ const projectService = {
 			});
 		}
 	},
-	rejectProject: async (projectId, callback) => {
+	rejectProject: async (data, callback) => {
 		logger.trace("ProjectService -> rejectProject");
-
 		try {
-			// Connect to the database pool
 			const poolPromise = await pool;
 			await poolPromise.connect();
 
-			// Prepare SQL statement
 			const prepStatement = new sql.PreparedStatement(poolPromise);
-			prepStatement.input("projectId", sql.Int);
-
+			prepStatement.input("projectId", sql.BigInt);
 			await prepStatement.prepare(`
 				UPDATE Project SET IsAccepted = 0 WHERE ProjectId = @projectId
 			`);
-
-			// Execute SQL statement
-			const result = await prepStatement.execute({ projectId });
-
+			const result = await prepStatement.execute({ projectId: data.projectId });
 			await prepStatement.unprepare();
-
-			// Check if project was successfully rejected
 			if (result.rowsAffected[0] === 1) {
 				logger.trace("ProjectService -> rejectProject: Project rejected");
 				callback(null, {
@@ -225,15 +208,14 @@ const projectService = {
 					data: {},
 				});
 			} else {
-				logger.error("ProjectService -> rejectProject: No project rejected");
+				logger.error("ProjectService -> rejectProject: Project not rejected");
 				callback({
-					status: 500,
-					message: "No project rejected",
+					status: 404,
+					message: "Project not rejected",
 					data: {},
 				});
 			}
 		} catch (error) {
-			// Log and return error
 			logger.error("ProjectService -> rejectProject: Error rejecting project", error);
 			callback({
 				status: 500,

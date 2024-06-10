@@ -88,6 +88,6 @@ router.get("/api/testproject", projectController.test);
 router.put("/api/updateproject", projectController.update);
 router.get("/api/getunwatchedprojects", projectController.getUnwatchedProjects);
 router.put("/api/acceptproject", projectController.acceptProject);
-router.put("/api/declineproject", projectController.rejectProject);
+router.put("/api/rejectproject", projectController.rejectProject);
 
 module.exports = router;
