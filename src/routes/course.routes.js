@@ -31,6 +31,7 @@ function addCourseValidation(req, res, next) {
 
 // Routes
 router.get('/api/getCourses', login.validateToken, courseController.getCourses);
+router.get('/api/getCertificates', courseController.getCertificates)
 router.post('/api/addCourse', login.validateToken, addCourseValidation, courseController.addCourse);
 
 module.exports = router;
