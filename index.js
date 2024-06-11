@@ -10,6 +10,7 @@ const logger = require("./src/util/logger");
 const projectRoutes = require("./src/routes/project.routes");
 const loginRoutes = require('./src/routes/login.routes').router;
 const memberRoutes = require('./src/routes/member.routes');
+const courseRoutes = require('./src/routes/course.routes');
 
 const firstResponderRoutes = require('./src/routes/firstResponder.routes')
 
@@ -38,7 +39,8 @@ app.use(memberRoutes);
 app.use(loginRoutes);
 
 app.use(projectRoutes);
-app.use(firstResponderRoutes)
+app.use(firstResponderRoutes);
+app.use(courseRoutes);
 
 // Remaining routes
 app.use((req, res, next) => {
