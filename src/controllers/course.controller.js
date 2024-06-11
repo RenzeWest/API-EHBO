@@ -25,6 +25,28 @@ const courseContoller = {
 
     },
 
+    getCertificates: (req, res, next) => {
+        logger.trace('courseController -> getAllCertificates');
+
+        courseService.getAllCertificates((error, succes) => {
+            if (error) {
+                logger.error('courseController -> getAllCertificates');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        });
+    },
+
     addCourse: (req, res, next) => {
         logger.trace('courseController -> getCourse');
 

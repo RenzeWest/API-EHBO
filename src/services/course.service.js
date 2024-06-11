@@ -26,6 +26,29 @@ const courseService = {
         })
     },
 
+	getAllCertificates: async (callback) => {
+		logger.trace('courseService -> getAllCourses');
+
+		if (!pool.connected) {
+            await pool.connect();
+        }
+
+        const request = new sql.Request(pool);
+        request.query("SELECT * FROM Certificate",
+         (error, result) => {
+            if (error) {
+                logger.error(error);
+                callback(error, null);
+            } else {
+                callback(null, {
+                    status: 200,
+                    message: 'Certificates found',
+                    data: result.recordset
+                });
+            }
+        })
+	},
+
     addCourse: async (courseInformation, callback) => {
         logger.trace('courseService -> addCourse');
         
