@@ -11,8 +11,8 @@ const projectRoutes = require("./src/routes/project.routes");
 const loginRoutes = require('./src/routes/login.routes').router;
 const memberRoutes = require('./src/routes/member.routes');
 const courseRoutes = require('./src/routes/course.routes');
-
-const firstResponderRoutes = require('./src/routes/firstResponder.routes')
+const shiftRoutes = require('./src/routes/shift.routes');
+const firstResponderRoutes = require('./src/routes/firstResponder.routes');
 
 
 app.use(express.json());
@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
 
 app.use(memberRoutes);
 app.use(loginRoutes);
-
+app.use(shiftRoutes);
 app.use(projectRoutes);
 app.use(firstResponderRoutes);
 app.use(courseRoutes);
