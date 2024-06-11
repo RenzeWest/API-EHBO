@@ -133,7 +133,6 @@ const projectController = {
             }
         });
     },
-
 	getActiveProjects: (req, res, next) => {
         logger.trace('projectController -> getActiveProjects');
 
@@ -154,8 +153,43 @@ const projectController = {
                 })
             }
         });
-
-    }
+    },
+	acceptProject: (req, res, next) => {
+		projectService.acceptProject(req.body, (error, success) => {
+			if (error) {
+				return next({
+					status: error.status,
+					message: error.message,
+					data: {},
+				});
+			}
+			if (success) {
+				res.status(200).json({
+					status: success.status,
+					message: success.message,
+					data: success.data,
+				});
+			}
+		});
+	},
+	rejectProject: (req, res, next) => {
+		projectService.rejectProject(req.body, (error, success) => {
+			if (error) {
+				return next({
+					status: error.status,
+					message: error.message,
+					data: {},
+				});
+			}
+			if (success) {
+				res.status(200).json({
+					status: success.status,
+					message: success.message,
+					data: success.data,
+				});
+			}
+		});
+	},
 };
 
 module.exports = projectController;

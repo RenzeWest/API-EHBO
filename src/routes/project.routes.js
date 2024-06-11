@@ -28,6 +28,7 @@ function createProject(req, res, next) {
 		chai.expect(body, "Missing currentdate").to.have.property("currentdate");
 		chai.expect(body, "Missing beginTime").to.have.property("beginTime");
 		chai.expect(body, "Missing endTime").to.have.property("endTime");
+		chai.expect(body, "Missing endDate").to.have.property("endDate");
 
 		// Validate and convert date
 		const date = new Date(body.date);
@@ -88,5 +89,7 @@ router.put("/api/updateproject", projectController.update);
 router.get("/api/getAllUndecidedProjects", projectController.getAllUndecidedProject);
 router.get("/api/getProject", projectController.getProject);
 router.get("/api/getActiveProjects", projectController.getActiveProjects);
+router.put("/api/acceptproject", projectController.acceptProject);
+router.put("/api/rejectproject", projectController.rejectProject);
 
 module.exports = router;

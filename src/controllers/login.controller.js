@@ -1,82 +1,98 @@
-const logger = require('../util/logger');
-const loginService = require('../services/login.service');
+const logger = require("../util/logger");
+const loginService = require("../services/login.service");
 
 const loginController = {
+	/**
+	 * @deprecated - Is om te testen, zou niet moeten worden gebruikt
+	 */
+	test: (req, res, next) => {
+		logger.trace("LoginController -> test");
 
-    /**
-     * @deprecated - Is om te testen, zou niet moeten worden gebruikt
-     */
-    test: (req, res, next) => {
-        logger.trace('LoginController -> test');
+		// Roep de service aan
+		loginService.test((error, succes) => {
+			// This will run if there is a error
+			if (error) {
+				return next({
+					status: error.status,
+					message: error.message,
+					data: {},
+				});
+			}
+			// This wil run if there is a succes
+			if (succes) {
+				res.status(200).json({
+					status: succes.status,
+					message: succes.message,
+					data: succes.data,
+				});
+			}
+		});
+	},
 
-        // Roep de service aan 
-        loginService.test((error, succes) => {
-            // This will run if there is a error
-            if (error) {
-                return next({
-                    status: error.status,
-                    message: error.message,
-                    data: {}
-                });
-            } 
-            // This wil run if there is a succes
-            if (succes) {
-                res.status(200).json({
-                    status: succes.status,
-                    message: succes.message,
-                    data: succes.data
-                });
-            }
+	login: (req, res, next) => {
+		loginService.login({ emailaddress: req.body.emailaddress, password: req.body.password }, (error, succes) => {
+			if (error) {
+				return next({
+					status: error.status,
+					message: error.message,
+					data: {},
+				});
+			}
 
-        });
-    },
+			if (succes) {
+				res.status(200).json({
+					status: succes.status,
+					message: succes.message,
+					data: succes.data,
+				});
+			}
+		});
+	},
 
-    login: (req, res, next) => {
-        loginService.login({emailaddress: req.body.emailaddress, password: req.body.password}, (error, succes) => {
-            if (error) {
-                return next({
-                    status: error.status,
-                    message: error.message,
-                    data: {}
-                });
-            }
-
-            if (succes) {
-                res.status(200).json( {
-                    status: succes.status,
-                    message: succes.message,
-                    data: succes.data
-               });
-           }
-        });
-    },
-
-    update: (req, res, next) => {
-        loginService.update(req.userId, req.body, (error, succes) => {
-            if (error) {
-                return next({
-                    status: error.status,
-                    message: error.message,
-                    data: {}
-                })
-            }
-            if (succes) {
-                res.status(200).json({
-                    status:200,
-                    message: succes.message,
-                    data: succes.data
-                })
-            }
-        });
-    },
-    validateToken: (req, res, next) => {
-        // Als het hierkomt is de token al valid
-        res.status(200).json({
-            status: 200,
-            message: 'User authorised',
-            data: {}
-        });
-    }
-}
+	update: (req, res, next) => {
+		loginService.update(req.userId, req.body, (error, succes) => {
+			if (error) {
+				return next({
+					status: error.status,
+					message: error.message,
+					data: {},
+				});
+			}
+			if (succes) {
+				res.status(200).json({
+					status: 200,
+					message: succes.message,
+					data: succes.data,
+				});
+			}
+		});
+	},
+	validateToken: (req, res, next) => {
+		// Als het hierkomt is de token al valid
+		res.status(200).json({
+			status: 200,
+			message: "User authorised",
+			data: {},
+		});
+	},
+	validatePassword: (req, res, next) => {
+		loginService.validatePassword(req.userId, req.body, (error, succes) => {
+			if (error) {
+				return next({
+					status: error.status,
+					message: error.message,
+					data: {},
+				});
+			}
+			if (succes) {
+				res.status(200).json({
+					status: 200,
+					message: succes.message,
+					data: succes.data,
+				});
+			}
+		});
+	},
+};
 
 module.exports = loginController;
