@@ -132,6 +132,29 @@ const projectController = {
                 });
             }
         });
+    },
+
+	getActiveProjects: (req, res, next) => {
+        logger.trace('projectController -> getActiveProjects');
+
+        projectService.getActiveProjects((error, succes) => {
+            if (error) {
+                logger.error('projectController -> getActiveProjects');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message || 'Hoi',
+                    data: succes.data || 'Hoi'
+                })
+            }
+        });
+
     }
 };
 

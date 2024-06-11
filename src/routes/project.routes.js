@@ -87,5 +87,6 @@ router.get("/api/testproject", projectController.test);
 router.put("/api/updateproject", projectController.update);
 router.get("/api/getAllUndecidedProjects", projectController.getAllUndecidedProject);
 router.get("/api/getProject", projectController.getProject);
+router.get("/api/getActiveProjects", projectController.getActiveProjects);
 
 module.exports = router;

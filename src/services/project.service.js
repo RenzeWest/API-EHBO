@@ -101,6 +101,7 @@ const projectService = {
 		}
 	},
 
+	// Get all projects where IsAccepted === null
 	getAllUndecidedProject: async (callback) => {
 		logger.trace('ProjectService -> getAllUndecidedProject');
 	
@@ -173,6 +174,7 @@ const projectService = {
 		});
 	},
 
+	// Get project using Id
 	getProject: async (projectId, callback) => {
 		logger.trace(projectId);
 		logger.trace('projectService -> getProject');
@@ -238,6 +240,78 @@ const projectService = {
 							status: 200,
 							message: `Project found with id ${projectId}`,
 							data: result.recordset[0]
+						});
+					}
+				});
+			});
+		});
+	},
+
+	getActiveProjects: async (callback) => {
+		logger.trace('ProjectService -> getActiveProjects');
+	
+		if (!pool.connected) {
+			await pool.connect();
+		}
+	
+		// Get a connection for the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+	
+		// Prepare the SQL statement
+		const query = 'SELECT * FROM Project WHERE IsActive = 1';
+	
+		prepStatement.prepare(query, (err) => {
+			if (err) {
+				logger.error(err);
+				callback(err, null);
+				return;
+			}
+			logger.trace('no error for preparing statement');
+	
+			prepStatement.execute({}, (err, result) => {
+				logger.trace('starting execute');
+				if (err) {
+					logger.error(err);
+					callback(err, null);
+					return;
+				}
+				logger.debug('getActiveProjects -> execute');
+	
+				// Check if projects are found
+				if (result.recordset.length === 0) {
+					logger.info('No projects found');
+					callback({
+						status: 404,
+						message: 'Projects not found',
+						data: {}
+					}, null);
+	
+					prepStatement.unprepare((err) => {
+						logger.debug('getActiveProjects -> statement unprepared');
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						}
+					});
+					return;
+				}
+	
+				// Unprepare statement to release connection
+				prepStatement.unprepare((err) => {
+					logger.debug('getActiveProjects -> statement unprepared');
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info('getActiveProjects Successful');
+						const noPassword = result.recordset[0];
+						delete noPassword.Password;
+	
+						callback(null, {
+							status: 200,
+							message: `Projects found`,
+							data: result.recordset
 						});
 					}
 				});
