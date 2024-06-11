@@ -1,7 +1,8 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../index');
-const tracer = require('tracer')
+const tracer = require('tracer');
+const pool = require('../src/doa/sql-database');
 
 chai.should();
 chai.use(chaiHttp);
@@ -229,5 +230,17 @@ describe ('UC Course Creation Tests', () => {
         });
     });
 
+    after(async () => {
+        try {
+            if (!pool.connected) {
+                await pool.connect();
+            }
+            const request = pool.request();
+            const result = await request.query("DELETE FROM Course WHERE Title = 'Test Cursus 1';");
+        } catch (err) {
+            logger.error('Error resetting dummy data', err)
+        }
+        
+    });
 
 });
