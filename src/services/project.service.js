@@ -2,6 +2,7 @@ const pool = require("../doa/sql-database");
 const logger = require("../util/logger");
 const sql = require("mssql");
 const moment = require("moment");
+const { rejectProject } = require("../controllers/project.controller");
 
 const projectService = {
 	create: async (data, callback) => {
@@ -96,6 +97,124 @@ const projectService = {
 				status: 500,
 				message: "Internal Server Error",
 				data: {},
+				error: error.message,
+			});
+		}
+	},
+	getUnwatchedProjects: async (callback) => {
+		logger.trace("ProjectService -> getUnacceptedprojects");
+
+		try {
+			// Connect to the database pool
+			const poolPromise = await pool;
+			await poolPromise.connect();
+
+			// Prepare SQL statement
+			const prepStatement = new sql.PreparedStatement(poolPromise);
+
+			await prepStatement.prepare(`
+				SELECT * FROM Project WHERE IsAccepted IS NULL
+			`);
+
+			// Execute SQL statement
+			const result = await prepStatement.execute();
+
+			await prepStatement.unprepare();
+
+			// Check if projects were successfully retrieved
+			if (result.recordset.length > 0) {
+				logger.trace("ProjectService -> getUnacceptedprojects: Retrieved projects");
+				callback(null, {
+					status: 200,
+					message: "Projects retrieved",
+					data: result.recordset,
+				});
+			} else {
+				logger.error("ProjectService -> getUnacceptedprojects: No projects found");
+				callback({
+					status: 404,
+					message: "No projects found",
+					data: {},
+				});
+			}
+		} catch (error) {
+			// Log and return error
+			logger.error("ProjectService -> getUnacceptedprojects: Error retrieving projects", error);
+			callback({
+				status: 500,
+				message: "Internal Server Error",
+				data: {},
+				error: error.message,
+			});
+		}
+	},
+	acceptProject: async (data, callback) => {
+		logger.trace("ProjectService -> acceptProject");
+
+		try {
+			const poolPromise = await pool;
+			await poolPromise.connect();
+
+			const prepStatement = new sql.PreparedStatement(poolPromise);
+			prepStatement.input("projectId", sql.BigInt);
+			await prepStatement.prepare(`
+				UPDATE Project SET IsAccepted = 1 WHERE ProjectId = @projectId
+			`);
+			const result = await prepStatement.execute({ projectId: data.projectId });
+			await prepStatement.unprepare();
+			if (result.rowsAffected[0] === 1) {
+				logger.trace("ProjectService -> acceptProject: Project accepted");
+				callback(null, {
+					status: 200,
+					message: "Project accepted",
+				});
+			} else {
+				logger.error("ProjectService -> acceptProject: Project not accepted");
+				callback({
+					status: 404,
+					message: "Project not accepted",
+				});
+			}
+		} catch (error) {
+			logger.error("ProjectService -> acceptProject: Error accepting project", error);
+			callback({
+				status: 500,
+				message: "Internal Server Error",
+				error: error.message,
+			});
+		}
+	},
+	rejectProject: async (data, callback) => {
+		logger.trace("ProjectService -> rejectProject");
+		try {
+			const poolPromise = await pool;
+			await poolPromise.connect();
+
+			const prepStatement = new sql.PreparedStatement(poolPromise);
+			prepStatement.input("projectId", sql.BigInt);
+			await prepStatement.prepare(`
+				UPDATE Project SET IsAccepted = 0 WHERE ProjectId = @projectId
+			`);
+			const result = await prepStatement.execute({ projectId: data.projectId });
+			await prepStatement.unprepare();
+			if (result.rowsAffected[0] === 1) {
+				logger.trace("ProjectService -> rejectProject: Project rejected");
+				callback(null, {
+					status: 200,
+					message: "Project rejected",
+				});
+			} else {
+				logger.error("ProjectService -> rejectProject: Project not rejected");
+				callback({
+					status: 404,
+					message: "Project not rejected",
+				});
+			}
+		} catch (error) {
+			logger.error("ProjectService -> rejectProject: Error rejecting project", error);
+			callback({
+				status: 500,
+				message: "Internal Server Error",
 				error: error.message,
 			});
 		}

@@ -7,7 +7,7 @@ chai.should();
 chai.use(chaiHttp);
 tracer.setLevel("warn");
 
-const endpointToTest = "/api/shift";
+const endpointToTest = "/api/createshift";
 describe("UC create shift ", () => {
 	beforeEach(async () => {
 		console.log("Before each test");

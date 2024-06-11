@@ -1,6 +1,6 @@
 const logger = require("../util/logger");
 const shiftService = require("../services/shift.service");
-function shiftController() { 
+const shiftController = { 
     getShifts: (req, res, next) => {
             logger.trace("shiftController -> getShifts");
             shiftService.getShifts((error, success) => {
@@ -20,6 +20,7 @@ function shiftController() {
                 }
             });
         },
+    
     createShifts: (req, res, next) => {
             logger.trace("shiftController -> createShifts");
             shiftService.createShifts(req.body, (error, success) => {
@@ -40,3 +41,5 @@ function shiftController() {
             });
      },
 }
+
+module.exports = shiftController
