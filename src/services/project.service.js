@@ -101,52 +101,223 @@ const projectService = {
 			});
 		}
 	},
-	getUnwatchedProjects: async (callback) => {
-		logger.trace("ProjectService -> getUnacceptedprojects");
 
-		try {
-			// Connect to the database pool
-			const poolPromise = await pool;
-			await poolPromise.connect();
-
-			// Prepare SQL statement
-			const prepStatement = new sql.PreparedStatement(poolPromise);
-
-			await prepStatement.prepare(`
-				SELECT * FROM Project WHERE IsAccepted IS NULL
-			`);
-
-			// Execute SQL statement
-			const result = await prepStatement.execute();
-
-			await prepStatement.unprepare();
-
-			// Check if projects were successfully retrieved
-			if (result.recordset.length > 0) {
-				logger.trace("ProjectService -> getUnacceptedprojects: Retrieved projects");
-				callback(null, {
-					status: 200,
-					message: "Projects retrieved",
-					data: result.recordset,
-				});
-			} else {
-				logger.error("ProjectService -> getUnacceptedprojects: No projects found");
-				callback({
-					status: 404,
-					message: "No projects found",
-					data: {},
-				});
-			}
-		} catch (error) {
-			// Log and return error
-			logger.error("ProjectService -> getUnacceptedprojects: Error retrieving projects", error);
-			callback({
-				status: 500,
-				message: "Internal Server Error",
-				data: {},
-				error: error.message,
-			});
+	// Get all projects where IsAccepted === null
+	getAllUndecidedProject: async (callback) => {
+		logger.trace('ProjectService -> getAllUndecidedProject');
+	
+		if (!pool.connected) {
+			await pool.connect();
 		}
+	
+		// Get a connection for the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+	
+		// Prepare the SQL statement
+		const query = 'SELECT * FROM Project WHERE IsAccepted IS NULL';
+	
+		prepStatement.prepare(query, (err) => {
+			if (err) {
+				logger.error(err);
+				callback(err, null);
+				return;
+			}
+			logger.trace('no error for preparing statement');
+	
+			prepStatement.execute({}, (err, result) => {
+				logger.trace('starting execute');
+				if (err) {
+					logger.error(err);
+					callback(err, null);
+					return;
+				}
+				logger.debug('getAllUndecidedProject -> execute');
+	
+				// Check if projects are found
+				if (result.recordset.length === 0) {
+					logger.info('No projects found');
+					callback({
+						status: 404,
+						message: 'Projects not found',
+						data: {}
+					}, null);
+	
+					prepStatement.unprepare((err) => {
+						logger.debug('getAllUndecidedProject -> statement unprepared');
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						}
+					});
+					return;
+				}
+	
+				// Unprepare statement to release connection
+				prepStatement.unprepare((err) => {
+					logger.debug('getAllUndecidedProject -> statement unprepared');
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info('getAllUndecidedProject Successful');
+						const noPassword = result.recordset[0];
+						delete noPassword.Password;
+	
+						callback(null, {
+							status: 200,
+							message: `Projects found`,
+							data: result.recordset
+						});
+					}
+				});
+			});
+		});
+	},
+
+	// Get project using Id
+	getProject: async (projectId, callback) => {
+		logger.trace(projectId);
+		logger.trace('projectService -> getProject');
+	
+		if (!pool.connected) {
+			await pool.connect();
+		}
+	
+		// Get a connection for the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+	
+		// Prepare variables
+		prepStatement.input('projectId', sql.BigInt);
+	
+		// Prepare the statement
+		prepStatement.prepare('SELECT * FROM Project WHERE ProjectId = @projectId', (err) => {
+			if (err) {
+				logger.error(err);
+				callback(err, null);
+				return;
+			}
+			console.log(projectId)
+			prepStatement.execute({ projectId: projectId }, (err, result) => {
+				if (err) {
+					logger.error(err);
+					callback(err, null);
+					return;
+				}
+				logger.debug('getProject -> execute');
+	
+				// Check if a project is found
+				if (result.recordset.length === 0) {
+					logger.info('No project found');
+					callback({
+						status: 404,
+						message: 'Project not found',
+						data: {}
+					}, null);
+	
+					prepStatement.unprepare((err) => {
+						logger.debug('getProject -> statement unprepared');
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						}
+					});
+					return;
+				}
+	
+				// Unprepare statement to release connection
+				prepStatement.unprepare((err) => {
+					logger.debug('getProject -> statement unprepared');
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info('getProject Successful');
+						const noPassword = result.recordset[0];
+						delete noPassword.Password;
+	
+						callback(null, {
+							status: 200,
+							message: `Project found with id ${projectId}`,
+							data: result.recordset[0]
+						});
+					}
+				});
+			});
+		});
+	},
+	
+	getActiveProjects: async (callback) => {
+		logger.trace('ProjectService -> getActiveProjects');
+	
+		if (!pool.connected) {
+			await pool.connect();
+		}
+	
+		// Get a connection for the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+	
+		// Prepare the SQL statement
+		const query = 'SELECT * FROM Project WHERE IsActive = 1';
+	
+		prepStatement.prepare(query, (err) => {
+			if (err) {
+				logger.error(err);
+				callback(err, null);
+				return;
+			}
+			logger.trace('no error for preparing statement');
+	
+			prepStatement.execute({}, (err, result) => {
+				logger.trace('starting execute');
+				if (err) {
+					logger.error(err);
+					callback(err, null);
+					return;
+				}
+				logger.debug('getActiveProjects -> execute');
+	
+				// Check if projects are found
+				if (result.recordset.length === 0) {
+					logger.info('No projects found');
+					callback({
+						status: 404,
+						message: 'Projects not found',
+						data: {}
+					}, null);
+	
+					prepStatement.unprepare((err) => {
+						logger.debug('getActiveProjects -> statement unprepared');
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+						}
+					});
+					return;
+				}
+	
+				// Unprepare statement to release connection
+				prepStatement.unprepare((err) => {
+					logger.debug('getActiveProjects -> statement unprepared');
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info('getActiveProjects Successful');
+						const noPassword = result.recordset[0];
+						delete noPassword.Password;
+	
+						callback(null, {
+							status: 200,
+							message: `Projects found`,
+							data: result.recordset
+						});
+					}
+				});
+			});
+		});
 	},
 	acceptProject: async (data, callback) => {
 		logger.trace("ProjectService -> acceptProject");
@@ -219,6 +390,6 @@ const projectService = {
 			});
 		}
 	},
-};
+}
 
 module.exports = projectService;

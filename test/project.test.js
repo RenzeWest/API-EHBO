@@ -11,9 +11,8 @@ chai.should();
 chai.use(chaiHttp);
 tracer.setLevel("warn");
 
-const endpointToTest = "/api/create";
-
 describe("UC: Create Project Tests", () => {
+	const endpointToTest = "/api/create";
 	beforeEach(async () => {
 		console.log("Before each test");
 	});
@@ -384,3 +383,92 @@ describe("UC: Reject Project Tests", () => {
 			});
 	});
 });
+
+// Testing getAllUndecidedProjects and getProject
+describe("UC: Select Project Tests", () => {
+	let endpointToTest = "/api/getAllUndecidedProjects";
+
+	beforeEach(() => {
+		console.log("Before each test");
+	});
+
+	it("TC 1: Successfully got projects", (done) => {
+		chai.request(server)
+			.get(endpointToTest)
+			.end((err, res) => {
+				if (err) {
+					console.error("Error:", err.response ? err.response.text : err);
+					done(err);
+					return;
+				}
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Projects found");
+				chai.expect(body).to.have.property("data").that.is.a("array").is.not.empty;
+				done();
+			});
+	});
+
+	it("TC 2: Successfully got project from Id", (done) => {
+		// Project with id 20 exists
+		
+		chai.request(server)
+			.get(`/api/getProject?projectId=20`)
+			.end((err, res) => {
+				if (err) {
+					done(err);
+					return;
+				}
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals(`Project found with id 20`);
+				chai.expect(body).to.have.property("data").that.is.a("object").is.not.empty;
+				done();
+			});
+	});
+
+	it("TC 3: No Project with that Id found", (done) => {
+		// Project with id 0 does not exist
+		
+		chai.request(server)
+			.get(`/api/getProject?projectId=0`)
+			.end((err, res) => {
+				if (err) {
+					done(err);
+					return;
+				}
+				chai.expect(res).to.have.status(404);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(404);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Project not found");
+				chai.expect(body).to.have.property("data").that.is.a("object").is.empty;
+				done();
+			});
+	});
+});
+describe("UC: Get Active Projects Tests", () => {
+	const endpointToTest = '/api/getActiveProjects';
+
+	beforeEach(() => {
+		console.log("Before each test");
+	});
+	it("TC 1: Successfully got active projects", (done) => {
+
+		chai.request(server)
+			.get(endpointToTest)
+			.end((err, res) => {
+				if (err) {
+					done(err);
+					return;
+				}
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Projects found");
+				chai.expect(body).to.have.property("data").that.is.a("array").is.not.empty;
+				done();
+			});
+	});
+})
