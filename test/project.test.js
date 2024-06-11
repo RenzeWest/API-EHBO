@@ -385,3 +385,27 @@ describe("UC: Select Project Tests", () => {
 			});
 	});
 });
+describe("UC: Get Active Projects Tests", () => {
+	const endpointToTest = '/api/getActiveProjects';
+
+	beforeEach(() => {
+		console.log("Before each test");
+	});
+	it("TC 1: Successfully got active projects", (done) => {
+
+		chai.request(server)
+			.get(endpointToTest)
+			.end((err, res) => {
+				if (err) {
+					done(err);
+					return;
+				}
+				chai.expect(res).to.have.status(200);
+				const body = res.body;
+				chai.expect(body).to.have.property("status").that.is.a("number").equals(200);
+				chai.expect(body).to.have.property("message").that.is.a("string").equals("Projects found");
+				chai.expect(body).to.have.property("data").that.is.a("array").is.not.empty;
+				done();
+			});
+	});
+})
