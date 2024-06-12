@@ -26,6 +26,57 @@ const courseService = {
         })
     },
 
+	getAvailebleCourses: async (userId, callback) => {
+		logger.trace('courseService -> getAvailebleCourses');
+        
+        try {
+
+            if (!pool.connected) {
+			    await pool.connect();
+		    }
+
+			// Prepare SQL statement
+			const prepStatement = new sql.PreparedStatement(pool);
+			prepStatement.input("userId", sql.BigInt);
+
+			await prepStatement.prepare(`SELECT * FROM Course WHERE CourseId NOT IN (SELECT CourseId FROM Enrollment WHERE userId = @userId) AND DateTime > GETDATE();`);
+
+			// Execute SQL statement
+			const result = await prepStatement.execute({
+				userId: userId,
+			});
+
+			await prepStatement.unprepare();
+
+			// Check if Course was successfully created
+			if (result.rowsAffected[0] >= 1) {
+				logger.trace("CourseService -> create: Courses found");
+				callback(null, {
+					status: 200,
+					message: "Courses found",
+					data: result.recordset,
+				});
+			} else {
+				logger.error("CourseService -> create: No Courses found");
+				console.log(result.recordset)
+				callback({
+					status: 200,
+					message: "No Courses found",
+					data: {},
+				});
+			}
+		} catch (error) {
+			// Log and return error
+			logger.error("CourseService -> create: Error getting courses", error);
+			callback({
+				status: 500,
+				message: "Internal Server Error",
+				data: {},
+				error: error.message,
+			});
+		}
+	},
+
 	getAllCertificates: async (callback) => {
 		logger.trace('courseService -> getAllCourses');
 

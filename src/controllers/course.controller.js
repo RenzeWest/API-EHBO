@@ -71,6 +71,31 @@ const courseContoller = {
         });
     },
 
+    getAvailebleCourses: (req, res, next) => {
+        logger.trace('courseController -> getAvailebleCourses');
+
+        // Haal de userid uuit de req en zet het in de body, beetje onnodig I know
+        
+
+        courseService.getAvailebleCourses(req.userId, (error, succes) => {
+            if (error) {
+                logger.error('courseController -> getAvailebleCourses');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        });
+    },
+
     enrollInCourse: (req, res, next) => {
         logger.trace('courseController -> enrollInCourse');
 
