@@ -2,10 +2,11 @@ const pool = require("../doa/sql-database");
 const sql = require("mssql");
 const logger = require("../util/logger");
 const jwt = require("jsonwebtoken");
+const { assignShift } = require("../controllers/shift.controller");
 const jwtSecretKey = require("../util/config").secretkey;
 
 const shiftService = {
-	getShifts: async (callback) => {
+	getShifts: async (projectId, callback) => {
 		logger.trace("shiftService -> getShifts");
 
 		if (!pool.connected) {
@@ -13,7 +14,9 @@ const shiftService = {
 		}
 
 		const request = new sql.Request(pool);
-		request.query("SELECT * FROM Shift", (error, result) => {
+		request.input("projectId", sql.BigInt, projectId);
+
+		request.query("SELECT * FROM Shift WHERE ProjectId = @projectId", (error, result) => {
 			if (error) {
 				logger.error(error);
 				callback(error, null);
@@ -65,6 +68,35 @@ const shiftService = {
 				});
 			});
 		});
+	},
+	assignShift: async (data, callback) => {
+		logger.trace("shiftService -> assignShift");
+
+		try {
+			const poolPromise = await pool;
+			const poolConnection = await poolPromise.connect();
+			const prepStatement = new sql.PreparedStatement(poolConnection);
+			prepStatement.input("shiftId", sql.BigInt);
+			prepStatement.input("userId", sql.BigInt);
+			prepStatement.input("projectId", sql.BigInt);
+
+			await prepStatement.prepare("INSERT INTO AssignedShift (ShiftId, UserId, ProjectId) VALUES (@shiftId, @userId, @projectId)");
+
+			await prepStatement.execute({ shiftId: data.shiftId, userId: data.userId, projectId: data.projectId });
+
+			await prepStatement.unprepare();
+
+			logger.debug("shift assigned");
+
+			callback(null, {
+				status: 200,
+				message: "Shift assigned",
+				data: {},
+			});
+		} catch (err) {
+			logger.error(err);
+			callback(err, null);
+		}
 	},
 };
 
