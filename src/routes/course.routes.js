@@ -29,8 +29,26 @@ function addCourseValidation(req, res, next) {
 	}
 }
 
+function enrollValidation(req, res, next) {
+	try {
+		const body = req.body;
+		chai.expect(body, "Missing courseId").to.have.property("courseId");
+		
+		next();
+	} catch (error) {
+		const splitedMessage = error.message.split(":");
+		logger.warn(splitedMessage[0]);
+		next({
+			status: 400,
+			message: splitedMessage[0],
+			data: {},
+		});
+	}
+}
+
 // Routes
 router.get('/api/getCourses', login.validateToken, courseController.getCourses);
+router.post('/api/enrollCourse', login.validateToken, enrollValidation ,courseController.enrollInCourse);
 router.get('/api/getCertificates', courseController.getCertificates)
 router.post('/api/addCourse', login.validateToken, addCourseValidation, courseController.addCourse);
 

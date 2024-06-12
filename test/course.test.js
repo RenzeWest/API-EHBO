@@ -11,7 +11,7 @@ tracer.setLevel('warn');
 const jwt = require(`jsonwebtoken`)
 const jwtSecretKey = require('../src/util/config').secretkey
 
-const endpointToTest = '/api/addCourse';
+let endpointToTest = '/api/addCourse';
 
 // Voorbeeld test
 describe ('UC Course Creation Tests', () => {
@@ -239,6 +239,102 @@ describe ('UC Course Creation Tests', () => {
             const result = await request.query("DELETE FROM Course WHERE Title = 'Test Cursus 1';");
         } catch (err) {
             logger.error('Error resetting dummy data', err)
+        }
+        
+    });
+
+});
+
+describe ('UC Enroll in course', () => {
+
+    // This will run before each "it"
+    beforeEach(async () => {
+        endpointToTest = '/api/enrollCourse'
+
+        try {
+            if (!pool.connected) {
+                await pool.connect();
+            }
+            const request = pool.request();
+            const result = await request.query("INSERT INTO Enrollment (UserId, CourseId, DateOfEnrollment) VALUES(4, 20003, GETDATE());");
+        } catch (err) {
+            console.error('Error resetting dummy data', err.message);
+        }
+        
+    });
+
+    it('TC-1 Succesfully enrolled in a course', (done) => {
+        const token = jwt.sign({ userId: 4 }, jwtSecretKey);
+
+        chai.request(server)
+        .post(endpointToTest)
+        .set('Authorization', `bearer ${token}`)
+        .send({
+            "courseId": 1
+        }).end((err, res) => {
+            chai.expect(res).to.have.status(200);
+            
+            const body = res.body
+            chai.expect(body).to.have.property('status').that.is.a('number').equals(200);
+            chai.expect(body).to.have.property('message').that.is.a('string').equals('enrollment created');
+            chai.expect(body).to.have.property('data').that.is.a('object').is.empty;
+            
+            done();
+        });
+    });
+
+    it('TC-2 Missing course ID ', (done) => {
+        const token = jwt.sign({ userId: 4 }, jwtSecretKey);
+
+        chai.request(server)
+        .post(endpointToTest)
+        .set('Authorization', `bearer ${token}`)
+        .send({
+            // "courseId": 1
+        }).end((err, res) => {
+            chai.expect(res).to.have.status(400);
+            
+            const body = res.body;
+            chai.expect(body).to.have.property('status').that.is.a('number').equals(400);
+            chai.expect(body).to.have.property('message').that.is.a('string').equals('Missing courseId');
+            chai.expect(body).to.have.property('data').that.is.a('object').is.empty;
+            
+            done();
+        });
+    });
+
+    it('TC-3 already enrolled ', (done) => {
+
+        const token = jwt.sign({ userId: 4 }, jwtSecretKey);
+
+        chai.request(server)
+        .post(endpointToTest)
+        .set('Authorization', `bearer ${token}`)
+        .send({
+            "courseId": 1
+        }).end((err, res) => {
+            chai.expect(res).to.have.status(500);
+            
+            const body = res.body;
+            chai.expect(body).to.have.property('status').that.is.a('number').equals(500);
+            chai.expect(body).to.have.property('message').that.is.a('string').equals('De gebruiker is al aangemeld bij deze cursus');
+            chai.expect(body).to.have.property('data').that.is.a('object').is.empty;
+            
+            done();
+        });
+    });
+
+    
+
+    after(async () => {
+        try {
+            if (!pool.connected) {
+                await pool.connect();
+            }
+            const request = pool.request();
+            const result = await request.query("DELETE FROM Enrollment WHERE (userId = 4 AND courseId = 1) OR (userId = 4 AND courseId = 20003);");
+        } catch (err) {
+            logger.error('Error resetting dummy data', err);
         }
         
     });
