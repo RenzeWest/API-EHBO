@@ -113,7 +113,71 @@ const courseService = {
 				error: error.message,
 			});
 		}
-    }
+    },
+
+	enrollInCourse: async (enrollmentInformation, callback) => {
+		logger.trace('CourseService -> enrollInCourse');
+
+		try {
+
+            if (!pool.connected) {
+			    await pool.connect();
+		    }
+
+			// Prepare SQL statement
+			const prepStatement = new sql.PreparedStatement(pool);
+			prepStatement.input("userId", sql.BigInt);
+			prepStatement.input("courseId", sql.BigInt);
+
+			await prepStatement.prepare(`INSERT INTO Enrollment (UserId, CourseId, DateOfEnrollment) VALUES(@userId, @courseId, GETDATE());`);
+
+			// Execute SQL statement
+			const result = await prepStatement.execute({
+				userId: enrollmentInformation.userId,
+				courseId: enrollmentInformation.courseId
+			});
+
+			await prepStatement.unprepare();
+
+			// Check if Course was successfully created
+			if (result.rowsAffected[0] === 1) {
+				logger.trace("CourseService -> enrollInCourse: Created a enrollment");
+				callback(null, {
+					status: 200,
+					message: "enrollment created",
+					data: {},
+				});
+			} else {
+				logger.error("CourseService -> enrollInCourse: No enrollment created");
+				callback({
+					status: 500,
+					message: "No enrollment Created",
+					data: {},
+				});
+			}
+		} catch (error) {
+			// Log and return error
+			if (error.message.startsWith("Violation of PRIMARY KEY constraint 'PK_Inschrijving'")) {
+				logger.error('Gebruiker is al ingeschreven bij deze cursus');
+
+				callback({
+					status: 500,
+					message: 'De gebruiker is al aangemeld bij deze cursus',
+					data: {}
+				});
+			} else {
+				logger.error("CourseService -> enrolleInCourse: Error Creating enrollement", error.message);
+				callback({
+					status: 500,
+					message: "Internal Server Error",
+					data: {},
+					error: error.message,
+				});
+			}
+
+		}
+
+	}
 }
 
 module.exports = courseService;

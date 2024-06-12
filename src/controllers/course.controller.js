@@ -69,7 +69,33 @@ const courseContoller = {
                 })
             }
         });
+    },
+
+    enrollInCourse: (req, res, next) => {
+        logger.trace('courseController -> enrollInCourse');
+
+        // Haal de userid uuit de req en zet het in de body, beetje onnodig I know
+        req.body.userId = req.userId;
+
+        courseService.enrollInCourse(req.body, (error, succes) => {
+            if (error) {
+                logger.error('courseController -> enrollInCourse');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        });
     }
+    
 }
 
 module.exports = courseContoller;
