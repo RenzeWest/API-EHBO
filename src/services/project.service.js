@@ -110,73 +110,85 @@ const projectService = {
 		if (!pool.connected) {
 			await pool.connect();
 		}
-
+		const request = new sql.Request(pool)
+		request.query("SELECT * FROM Project WHERE IsAccepted IS NULL", (error, result) => {
+			if (error) {
+                logger.error(error);
+                callback(error, null);
+            } else {
+                callback(null, {
+                    status: 200,
+                    message: 'Projects found',
+                    data: result.recordset
+                });
+            }
+		})
 		// Get a connection for the prepared statement
-		const prepStatement = new sql.PreparedStatement(pool);
+		// const prepStatement = new sql.PreparedStatement(pool);
 
-		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsAccepted IS NULL";
+		// // Prepare the SQL statement
+		// const query = "SELECT * FROM Project WHERE IsAccepted IS NULL";
 
-		prepStatement.prepare(query, (err) => {
-			if (err) {
-				logger.error(err);
-				callback(err, null);
-				return;
-			}
-			logger.trace("no error for preparing statement");
+		// prepStatement.prepare(query, (err) => {
+		// 	if (err) {
+		// 		logger.error(err);
+		// 		callback(err, null);
+		// 		return;
+		// 	}
+		// 	logger.trace("no error for preparing statement");
 
-			prepStatement.execute({}, (err, result) => {
-				logger.trace("starting execute");
-				if (err) {
-					logger.error(err);
-					callback(err, null);
-					return;
-				}
-				logger.debug("getAllUndecidedProject -> execute");
+		// 	prepStatement.execute({}, (err, result) => {
+		// 		logger.trace("starting execute");
+		// 		if (err) {
+		// 			logger.error(err);
+		// 			callback(err, null);
+		// 			return;
+		// 		}
+		// 		logger.debug("getAllUndecidedProject -> execute");
 
-				// Check if projects are found
-				if (result.recordset.length === 0) {
-					logger.info("No projects found");
-					callback(
-						{
-							status: 404,
-							message: "Projects not found",
-							data: {},
-						},
-						null
-					);
+		// 		// Check if projects are found
+		// 		if (result.recordset.length === 0) {
+		// 			logger.info("No projects found");
+		// 			callback(
+		// 				{
+		// 					status: 404,
+		// 					message: "Projects not found",
+		// 					data: {},
+		// 				},
+		// 				null
+		// 			);
 
-					prepStatement.unprepare((err) => {
-						logger.debug("getAllUndecidedProject -> statement unprepared");
-						if (err) {
-							logger.error(err);
-							callback(err, null);
-						}
-					});
-					return;
-				}
+		// 			prepStatement.unprepare((err) => {
+		// 				logger.debug("getAllUndecidedProject -> statement unprepared");
+		// 				if (err) {
+		// 					logger.error(err);
+		// 					callback(err, null);
+		// 				}
+		// 			});
+		// 			return;
+		// 		}
 
-				// Unprepare statement to release connection
-				prepStatement.unprepare((err) => {
-					logger.debug("getAllUndecidedProject -> statement unprepared");
-					if (err) {
-						logger.error(err);
-						callback(err, null);
-						return;
-					} else {
-						logger.info("getAllUndecidedProject Successful");
-						const noPassword = result.recordset[0];
-						delete noPassword.Password;
+		// 		// Unprepare statement to release connection
+		// 		prepStatement.unprepare((err) => {
+		// 			logger.debug("getAllUndecidedProject -> statement unprepared");
+		// 			if (err) {
+		// 				logger.error(err);
+		// 				callback(err, null);
+		// 				return;
+		// 			} else {
+		// 				logger.info("getAllUndecidedProject Successful");
+		// 				const noPassword = result.recordset[0];
+		// 				delete noPassword.Password;
 
-						callback(null, {
-							status: 200,
-							message: `Projects found`,
-							data: result.recordset,
-						});
-					}
-				});
-			});
-		});
+		// 				callback(null, {
+		// 					status: 200,
+		// 					message: `Projects found`,
+		// 					data: result.recordset,
+		// 				});
+		// 			}
+		// 		});
+		// 	});
+		// });
 	},
 	setProjectActive: async (data, callback) => {
 		logger.trace("ProjectService -> setProjectActive");
@@ -302,7 +314,7 @@ const projectService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsAccepted = 1 AND Date > GETDATE()+7 ";
+		const query = "SELECT * FROM Project WHERE IsAccepted = 1";
 
 		prepStatement.prepare(query, (err) => {
 			if (err) {
@@ -345,7 +357,7 @@ const projectService = {
 
 				// Unprepare statement to release connection
 				prepStatement.unprepare((err) => {
-					logger.debug("getAcceptedProjects -> statement unprepared");
+					logger.debug("getActiveProjects -> statement unprepared");
 					if (err) {
 						logger.error(err);
 						callback(err, null);
@@ -377,7 +389,7 @@ const projectService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsActive = 1 AND Date > GETDATE()";
+		const query = "SELECT * FROM Project WHERE IsActive = 1";
 
 		prepStatement.prepare(query, (err) => {
 			if (err) {
