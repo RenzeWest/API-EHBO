@@ -302,7 +302,7 @@ const projectService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsAccepted = 1";
+		const query = "SELECT * FROM Project WHERE IsAccepted = 1 AND Date > GETDATE()+7 ";
 
 		prepStatement.prepare(query, (err) => {
 			if (err) {
@@ -345,7 +345,7 @@ const projectService = {
 
 				// Unprepare statement to release connection
 				prepStatement.unprepare((err) => {
-					logger.debug("getActiveProjects -> statement unprepared");
+					logger.debug("getAcceptedProjects -> statement unprepared");
 					if (err) {
 						logger.error(err);
 						callback(err, null);
@@ -377,7 +377,7 @@ const projectService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsActive = 1";
+		const query = "SELECT * FROM Project WHERE IsActive = 1 AND Date > GETDATE()";
 
 		prepStatement.prepare(query, (err) => {
 			if (err) {
