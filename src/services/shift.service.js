@@ -357,7 +357,7 @@ const shiftService = {
 				FROM AssignedShift 
 				JOIN Member ON AssignedShift.UserId = Member.UserId 
 				JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
-				JOIN Project ON AssignedShift.ProjectId = Project.ProjectId 
+			
 				WHERE AssignedShift.ProjectId = @projectId 
 				AND AssignedShift.IsAccepted IS NULL`,
 				(error, result) => {
