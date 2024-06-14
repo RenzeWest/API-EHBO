@@ -71,10 +71,31 @@ function acceptForShift(req, res, next) {
 	}
 }
 
+function getShiftValidation(req, res, next) {
+	try {
+		const body = req.body;
+
+		// Log incoming request body
+		logger.debug("Incoming request body:", body);
+
+		chai.expect(body, "Missing shiftID").to.have.property("shiftId");
+		
+		next();
+	} catch (ex) {
+		const splitedMessage = ex.message.split(":");
+		next({
+			status: 400,
+			message: splitedMessage[0],
+			data: {},
+		});
+	}
+}
+
 router.get("/api/getshifts", shiftController.getShifts);
 router.get("/api/getMyShifts", validateToken, shiftController.getMyShifts);
 router.get("/api/assignToShift", validateToken, shiftController.assignShift);
 router.post("/api/createshift", createShift, shiftController.createShifts);
 router.put("/api/acceptForShift", validateToken, acceptForShift, shiftController.acceptForShift);
+router.get("/api/getShiftById", validateToken, getShiftValidation, shiftController.getShiftInformationById);
 
 module.exports = router;
