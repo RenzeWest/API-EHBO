@@ -51,6 +51,7 @@ function assignShift(req, res, next) {
 }
 
 router.get("/api/getshifts", shiftController.getShifts);
+router.get("/api/getMyShifts", validateToken, shiftController.getMyShifts);
 router.post("/api/createshift", createShift, shiftController.createShifts);
 router.post("/api/assignshift", assignShift, shiftController.assignShift);
 
