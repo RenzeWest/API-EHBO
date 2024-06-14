@@ -119,6 +119,28 @@ const courseContoller = {
                 })
             }
         });
+    },
+
+    deleteCourse: (req, res, next) => {
+        logger.trace('CourseController -> deleteCourse');
+
+        courseService.deleteCourse(req.body.courseId, (error, succes) => {
+            if(error) {
+                logger.error('courseController -> deleteCourse');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if(succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        });
     }
     
 }
