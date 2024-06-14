@@ -71,7 +71,7 @@ function acceptForShift(req, res, next) {
 	}
 }
 
-function getShiftValidation(req, res, next) {
+function shiftIdValidation(req, res, next) {
 	try {
 		const body = req.body;
 
@@ -96,6 +96,7 @@ router.get("/api/getMyShifts", validateToken, shiftController.getMyShifts);
 router.get("/api/assignToShift", validateToken, shiftController.assignShift);
 router.post("/api/createshift", createShift, shiftController.createShifts);
 router.put("/api/acceptForShift", validateToken, acceptForShift, shiftController.acceptForShift);
-router.get("/api/getShiftById", validateToken, getShiftValidation, shiftController.getShiftInformationById);
+router.get("/api/getShiftById", validateToken, shiftIdValidation, shiftController.getShiftInformationById);
+router.delete("/api/deleteAssignedShift", validateToken, shiftIdValidation, shiftController.deleteAssignedShift);
 
 module.exports = router;

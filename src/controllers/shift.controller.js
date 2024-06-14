@@ -133,7 +133,30 @@ const shiftController = {
                 })
             }
         });
-    }
+    }, 
+
+	deleteAssignedShift: (req, res, next) => {
+		logger.trace('shiftController -> deleteAssignedShift');
+		req.body.userId = req.userId;
+
+        shiftService.deleteAssignedShift(req.body, (error, succes) => {
+            if (error) {
+                logger.error('shiftController -> deleteAssignedShift');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        });
+	}
 };
 
 module.exports = shiftController;

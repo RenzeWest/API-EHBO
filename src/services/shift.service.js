@@ -274,6 +274,64 @@ const shiftService = {
 				});
 			});
 		});
+	},
+
+	deleteAssignedShift: async (shiftInformation, callback) => {
+		logger.trace('shiftService -> deleteAssignedShift');
+
+		if (!pool.connected) {
+			await pool.connect();
+		}
+
+		// Get a connection fore the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+
+		// Prepare valiables
+		prepStatement.input("userId", sql.BigInt);
+		prepStatement.input("shiftId", sql.BigInt);
+
+		// Bereid het statement door
+		prepStatement.prepare(`DELETE FROM AssignedShift WHERE UserId = @userId AND ShiftId = @shiftId`, (err) => {
+			if (err) {
+				callback(err, null);
+				logger.error(err);
+				return;
+			}
+
+			// Geef de waarden mee en voer uit
+			prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId}, (err, result) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
+				logger.debug("deleteAssignedShift -> execute");
+
+				// Unprepare statment om connectie vrij te geven
+				prepStatement.unprepare((err) => {
+					logger.debug("deleteAssignedShift -> statement unprepared");
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else if (result.rowsAffected[0] !== 0) {
+						logger.info("Query executed");
+						callback(null, {
+							status: 200,
+							message: 'Succesfully deleted assigned shift',
+							data: {}});
+					} else {
+						logger.info("Delete Failed");
+						callback({
+							status: 500,
+							message: 'Unsuccesfully deleted assigned shift',
+							data: {}
+						}, null);
+
+					}
+				});
+			});
+		});
 	}
 };
 
