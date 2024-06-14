@@ -228,6 +228,56 @@ const courseService = {
 
 		}
 
+	},
+
+	deleteCourse: async(courseId, callback) => {
+		logger.trace('Courseservice -> deleteCourse')
+
+		try{
+			if(!pool.connected){
+				await pool.connect()
+			}
+
+			const prepStatement = new sql.PreparedStatement(pool);
+			prepStatement.input("courseID", sql.BigInt);
+
+			await prepStatement.prepare(`DELETE FROM Course WHERE CourseId = @courseID;`);
+
+			// Execute SQL statement
+			const result = await prepStatement.execute({
+				courseID: courseId
+			});
+
+			if (result.rowsAffected[0] >= 1) {
+				logger.trace("CourseService -> delete: course deleted");
+				callback(null, {
+					status: 200,
+					message: "Course deleted",
+					data: {},
+				});
+			} else {
+				logger.error("CourseService -> delete: No Course found");
+				console.log(result.recordset)
+				callback({
+					status: 404,
+					message: "Course not found",
+					data: {},
+				});
+			}
+		} catch (error) {
+			// Log and return error
+			logger.error("CourseService -> delete: Error deleting course", error);
+			callback({
+				status: 500,
+				message: "Internal Server Error",
+				data: {},
+				error: error.message,
+			});
+
+
+		} 
+			
+		
 	}
 }
 

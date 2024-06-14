@@ -52,5 +52,6 @@ router.get('/api/getAvailableCourses', login.validateToken, courseController.get
 router.post('/api/enrollCourse', login.validateToken, enrollValidation ,courseController.enrollInCourse);
 router.get('/api/getCertificates', login.validateToken, courseController.getCertificates)
 router.post('/api/addCourse', login.validateToken, addCourseValidation, courseController.addCourse);
+router.delete('/api/deleteCourse', login.validateToken, courseController.deleteCourse);
 
 module.exports = router;
