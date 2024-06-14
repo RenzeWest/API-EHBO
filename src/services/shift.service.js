@@ -154,6 +154,68 @@ const shiftService = {
 				});
 			});
 		});
+	},
+
+	acceptForShift: async (assignedShiftInformation, callback) => {
+		logger.trace('shiftService -> acceptForShift');
+
+		if (!pool.connected) {
+			await pool.connect();
+		}
+
+		// Get a connection fore the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+
+		// Prepare valiables
+		prepStatement.input("userId", sql.BigInt);
+		prepStatement.input("shiftId", sql.BigInt);
+		prepStatement.input("projectId", sql.BigInt);
+
+		// Bereid het statement door
+		prepStatement.prepare(`UPDATE AssignedShift SET IsAccepted = 1 WHERE UserId = @userId AND ShiftId = @shiftId AND ProjectId = @projectId AND IsAccepted IS NULL`, (err) => {
+			if (err) {
+				callback(err, null);
+				logger.error(err);
+				return;
+			}
+			console.log(assignedShiftInformation);
+			// Geef de waarden mee en voer uit
+			prepStatement.execute({ userId: assignedShiftInformation.userId, projectId: assignedShiftInformation.projectId, shiftId: assignedShiftInformation.shiftId }, (err, result) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
+				logger.debug("acceptForShift -> execute");
+				console.log(result)
+				// Unprepare statment om connectie vrij te geven
+				prepStatement.unprepare((err) => {
+					logger.debug("acceptForShift -> statement unprepared");
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info("Query executed");
+
+						if (result.rowsAffected[0] === 0) {
+							callback(null, {
+								status: 400,
+								message: 'No rows affected...',
+								data: {}
+							});
+
+						} else {
+							callback({
+								status: 200,
+								message: 'AssignedShift Updated',
+								data: {}
+							}, null);
+						}
+					}
+				});
+			});
+		});
 	}
 };
 
