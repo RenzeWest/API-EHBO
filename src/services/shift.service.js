@@ -98,6 +98,63 @@ const shiftService = {
 			callback(err, null);
 		}
 	},
+
+	getMyShifts: async (userId, callback) => {
+		logger.trace('shiftService -> getMyShift');
+
+		if (!pool.connected) {
+			await pool.connect();
+		}
+
+		// Get a connection fore the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+
+		// Prepare valiables
+		prepStatement.input("userId", sql.BigInt);
+
+		// Bereid het statement door
+		prepStatement.prepare(`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
+								Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
+								Project.Title, Project.Address + ' ' + Project.HouseNr + ', ' + Project.City AS Address, Project.Company, Project.Description
+								FROM AssignedShift
+								INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
+								INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
+								WHERE AssignedShift.UserId = @userId;`, (err) => {
+			if (err) {
+				callback(err, null);
+				logger.error(err);
+				return;
+			}
+
+			// Geef de waarden mee en voer uit
+			prepStatement.execute({ userId: userId}, (err, result) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
+				logger.debug("getMyShifts -> execute");
+
+				// Unprepare statment om connectie vrij te geven
+				prepStatement.unprepare((err) => {
+					logger.debug("Login -> statement unprepared");
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info("Query executed");
+						callback(null, {
+							status: 200,
+							message: 'Shifts for userId: ' + userId,
+							data: result.recordset,
+					});
+
+					}
+				});
+			});
+		});
+	}
 };
 
 module.exports = shiftService;
