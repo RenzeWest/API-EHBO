@@ -11,7 +11,7 @@ const courseService = {
         }
 
         const request = new sql.Request(pool);
-        request.query("SELECT * FROM Course",
+        request.query("WITH EnrollmentCount AS (SELECT CourseId, COUNT(UserId) AS EnrolledCount FROM Enrollment GROUP BY CourseId) SELECT Course.*, Member.FirstName AS Teacher, COALESCE(EnrollmentCount.EnrolledCount, 0) AS EnrolledCount FROM Course JOIN Member ON Member.UserId = Course.TeacherId LEFT JOIN EnrollmentCount ON Course.CourseId = EnrollmentCount.CourseId",
          (error, result) => {
             if (error) {
                 logger.error(error);

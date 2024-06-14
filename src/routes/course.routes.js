@@ -50,7 +50,7 @@ function enrollValidation(req, res, next) {
 router.get('/api/getCourses', login.validateToken, courseController.getCourses);
 router.get('/api/getAvailableCourses', login.validateToken, courseController.getAvailebleCourses);
 router.post('/api/enrollCourse', login.validateToken, enrollValidation ,courseController.enrollInCourse);
-router.get('/api/getCertificates', courseController.getCertificates)
+router.get('/api/getCertificates', login.validateToken, courseController.getCertificates)
 router.post('/api/addCourse', login.validateToken, addCourseValidation, courseController.addCourse);
 
 module.exports = router;
