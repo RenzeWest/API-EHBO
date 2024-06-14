@@ -59,7 +59,7 @@ function acceptForShift(req, res, next) {
 
 		chai.expect(body, "Missing projectID").to.have.property("projectId");
 		chai.expect(body, "Missing shiftID").to.have.property("shiftId");
-		
+
 		next();
 	} catch (ex) {
 		const splitedMessage = ex.message.split(":");
@@ -79,7 +79,7 @@ function shiftIdValidation(req, res, next) {
 		logger.debug("Incoming request body:", body);
 
 		chai.expect(body, "Missing shiftID").to.have.property("shiftId");
-		
+
 		next();
 	} catch (ex) {
 		const splitedMessage = ex.message.split(":");
@@ -98,5 +98,7 @@ router.post("/api/createshift", createShift, shiftController.createShifts);
 router.put("/api/acceptForShift", validateToken, acceptForShift, shiftController.acceptForShift);
 router.get("/api/getShiftById", validateToken, shiftController.getShiftInformationById);
 router.delete("/api/deleteAssignedShift", validateToken, shiftIdValidation, shiftController.deleteAssignedShift);
+router.post("/api/assignshift", validateToken, assignShift, shiftController.assignShift);
+router.get("/api/getassignedshifts", validateToken, shiftController.getAssignedShifts);
 
 module.exports = router;

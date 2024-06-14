@@ -2,7 +2,7 @@ const pool = require("../doa/sql-database");
 const sql = require("mssql");
 const logger = require("../util/logger");
 const jwt = require("jsonwebtoken");
-const { assignShift } = require("../controllers/shift.controller");
+const { assignShift, getAssignedShifts } = require("../controllers/shift.controller");
 const jwtSecretKey = require("../util/config").secretkey;
 
 const shiftService = {
@@ -100,7 +100,7 @@ const shiftService = {
 	},
 
 	getMyShifts: async (userId, callback) => {
-		logger.trace('shiftService -> getMyShift');
+		logger.trace("shiftService -> getMyShift");
 
 		if (!pool.connected) {
 			await pool.connect();
@@ -113,51 +113,53 @@ const shiftService = {
 		prepStatement.input("userId", sql.BigInt);
 
 		// Bereid het statement door
-		prepStatement.prepare(`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
+		prepStatement.prepare(
+			`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
 								Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
 								Project.Title, Project.Address + ' ' + Project.HouseNr + ', ' + Project.City AS Address, Project.Company, Project.Description
 								FROM AssignedShift
 								INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
 								INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
-								WHERE AssignedShift.UserId = @userId;`, (err) => {
-			if (err) {
-				callback(err, null);
-				logger.error(err);
-				return;
-			}
-
-			// Geef de waarden mee en voer uit
-			prepStatement.execute({ userId: userId}, (err, result) => {
+								WHERE AssignedShift.UserId = @userId;`,
+			(err) => {
 				if (err) {
 					callback(err, null);
 					logger.error(err);
 					return;
 				}
-				logger.debug("getMyShifts -> execute");
 
-				// Unprepare statment om connectie vrij te geven
-				prepStatement.unprepare((err) => {
-					logger.debug("Login -> statement unprepared");
+				// Geef de waarden mee en voer uit
+				prepStatement.execute({ userId: userId }, (err, result) => {
 					if (err) {
-						logger.error(err);
 						callback(err, null);
+						logger.error(err);
 						return;
-					} else {
-						logger.info("Query executed");
-						callback(null, {
-							status: 200,
-							message: 'Shifts for userId: ' + userId,
-							data: result.recordset,
-					});
-
 					}
+					logger.debug("getMyShifts -> execute");
+
+					// Unprepare statment om connectie vrij te geven
+					prepStatement.unprepare((err) => {
+						logger.debug("Login -> statement unprepared");
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+							return;
+						} else {
+							logger.info("Query executed");
+							callback(null, {
+								status: 200,
+								message: "Shifts for userId: " + userId,
+								data: result.recordset,
+							});
+						}
+					});
 				});
-			});
-		});
+			}
+		);
 	},
 
 	acceptForShift: async (assignedShiftInformation, callback) => {
-		logger.trace('shiftService -> acceptForShift');
+		logger.trace("shiftService -> acceptForShift");
 
 		if (!pool.connected) {
 			await pool.connect();
@@ -187,7 +189,7 @@ const shiftService = {
 					return;
 				}
 				logger.debug("acceptForShift -> execute");
-				console.log(result)
+				console.log(result);
 				// Unprepare statment om connectie vrij te geven
 				prepStatement.unprepare((err) => {
 					logger.debug("acceptForShift -> statement unprepared");
@@ -201,25 +203,27 @@ const shiftService = {
 						if (result.rowsAffected[0] === 0) {
 							callback(null, {
 								status: 400,
-								message: 'No rows affected...',
-								data: {}
+								message: "No rows affected...",
+								data: {},
 							});
-
 						} else {
-							callback({
-								status: 200,
-								message: 'AssignedShift Updated',
-								data: {}
-							}, null);
+							callback(
+								{
+									status: 200,
+									message: "AssignedShift Updated",
+									data: {},
+								},
+								null
+							);
 						}
 					}
 				});
 			});
 		});
 	},
-	
+
 	getShiftInformationById: async (shiftInformation, callback) => {
-		logger.trace('shiftService -> getShiftInformationById');
+		logger.trace("shiftService -> getShiftInformationById");
 
 		if (!pool.connected) {
 			await pool.connect();
@@ -233,51 +237,53 @@ const shiftService = {
 		prepStatement.input("shiftId", sql.BigInt);
 
 		// Bereid het statement door
-		prepStatement.prepare(`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
+		prepStatement.prepare(
+			`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
 								Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
 								Project.Title, Project.Address + ' ' + Project.HouseNr + ', ' + Project.City AS Address, Project.Company, Project.Description
 								FROM AssignedShift
 								INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
 								INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
-								WHERE AssignedShift.UserId = @userId AND AssignedShift.ShiftId = @shiftId`, (err) => {
-			if (err) {
-				callback(err, null);
-				logger.error(err);
-				return;
-			}
-
-			// Geef de waarden mee en voer uit
-			prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId}, (err, result) => {
+								WHERE AssignedShift.UserId = @userId AND AssignedShift.ShiftId = @shiftId`,
+			(err) => {
 				if (err) {
 					callback(err, null);
 					logger.error(err);
 					return;
 				}
-				logger.debug("getShiftInformationById -> execute");
 
-				// Unprepare statment om connectie vrij te geven
-				prepStatement.unprepare((err) => {
-					logger.debug("getShiftInformationById -> statement unprepared");
+				// Geef de waarden mee en voer uit
+				prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId }, (err, result) => {
 					if (err) {
-						logger.error(err);
 						callback(err, null);
+						logger.error(err);
 						return;
-					} else {
-						logger.info("Query executed");
-						callback(null, {
-							status: 200,
-							message: 'Shifts for userId: ' + shiftInformation.userId + ' and shiftID: ' + shiftInformation.shiftId,
-							data: result.recordset,
-					});
-
 					}
+					logger.debug("getShiftInformationById -> execute");
+
+					// Unprepare statment om connectie vrij te geven
+					prepStatement.unprepare((err) => {
+						logger.debug("getShiftInformationById -> statement unprepared");
+						if (err) {
+							logger.error(err);
+							callback(err, null);
+							return;
+						} else {
+							logger.info("Query executed");
+							callback(null, {
+								status: 200,
+								message: "Shifts for userId: " + shiftInformation.userId + " and shiftID: " + shiftInformation.shiftId,
+								data: result.recordset,
+							});
+						}
+					});
 				});
-			});
-		});
+			}
+		);
 	},
 
 	deleteAssignedShift: async (shiftInformation, callback) => {
-		logger.trace('shiftService -> deleteAssignedShift');
+		logger.trace("shiftService -> deleteAssignedShift");
 
 		if (!pool.connected) {
 			await pool.connect();
@@ -299,7 +305,7 @@ const shiftService = {
 			}
 
 			// Geef de waarden mee en voer uit
-			prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId}, (err, result) => {
+			prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId }, (err, result) => {
 				if (err) {
 					callback(err, null);
 					logger.error(err);
@@ -318,21 +324,61 @@ const shiftService = {
 						logger.info("Query executed");
 						callback(null, {
 							status: 200,
-							message: 'Succesfully deleted assigned shift',
-							data: {}});
+							message: "Succesfully deleted assigned shift",
+							data: {},
+						});
 					} else {
 						logger.info("Delete Failed");
-						callback({
-							status: 500,
-							message: 'Unsuccesfully deleted assigned shift',
-							data: {}
-						}, null);
-
+						callback(
+							{
+								status: 500,
+								message: "Unsuccesfully deleted assigned shift",
+								data: {},
+							},
+							null
+						);
 					}
 				});
 			});
 		});
-	}
+	},
+
+	getAssignedShifts: async (projectId, callback) => {
+		logger.trace("shiftService -> getAssignedShifts");
+
+		try {
+			const poolPromise = await pool;
+			const poolConnection = await poolPromise.connect();
+			const request = new sql.Request(poolConnection);
+			request.input("projectId", sql.BigInt, projectId);
+
+			request.query(
+				`SELECT * 
+				FROM AssignedShift 
+				JOIN Member ON AssignedShift.UserId = Member.UserId 
+				JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
+				JOIN Project ON AssignedShift.ProjectId = Project.ProjectId 
+				WHERE AssignedShift.ProjectId = @projectId 
+				AND AssignedShift.IsAccepted IS NULL`,
+				(error, result) => {
+					if (error) {
+						logger.error(error);
+						callback(error, null);
+					} else {
+						callback(null, {
+							status: 200,
+							message: "Shifts found",
+							data: result.recordset,
+						});
+					}
+					poolConnection.release();
+				}
+			);
+		} catch (error) {
+			logger.error(error);
+			callback(error, null);
+		}
+	},
 };
 
 module.exports = shiftService;

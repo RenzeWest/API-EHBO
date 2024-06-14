@@ -110,19 +110,19 @@ const projectService = {
 		if (!pool.connected) {
 			await pool.connect();
 		}
-		const request = new sql.Request(pool)
+		const request = new sql.Request(pool);
 		request.query("SELECT * FROM Project WHERE IsAccepted IS NULL", (error, result) => {
 			if (error) {
-                logger.error(error);
-                callback(error, null);
-            } else {
-                callback(null, {
-                    status: 200,
-                    message: 'Projects found',
-                    data: result.recordset
-                });
-            }
-		})
+				logger.error(error);
+				callback(error, null);
+			} else {
+				callback(null, {
+					status: 200,
+					message: "Projects found",
+					data: result.recordset,
+				});
+			}
+		});
 		// Get a connection for the prepared statement
 		// const prepStatement = new sql.PreparedStatement(pool);
 
@@ -314,7 +314,7 @@ const projectService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsAccepted = 1";
+		const query = "SELECT * FROM Project WHERE IsAccepted = 1 ";
 
 		prepStatement.prepare(query, (err) => {
 			if (err) {
@@ -389,7 +389,7 @@ const projectService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare the SQL statement
-		const query = "SELECT * FROM Project WHERE IsActive = 1";
+		const query = "SELECT * FROM Project WHERE IsActive = 1 AND Date > GETDATE()";
 
 		prepStatement.prepare(query, (err) => {
 			if (err) {
