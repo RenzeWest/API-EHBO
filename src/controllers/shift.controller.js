@@ -110,6 +110,29 @@ const shiftController = {
                 })
             }
         });
+    },
+
+	getShiftInformationById: (req, res, next) => {
+        logger.trace('shiftController -> getShiftInformationById');
+		req.body.userId = req.userId;
+
+        shiftService.getShiftInformationById(req.body, (error, succes) => {
+            if (error) {
+                logger.error('shiftController -> getShiftInformationById');
+                return next({
+                    status: error.status,
+                    message: error.message,
+                    data: {}
+                })
+            }
+            if (succes) {
+                res.status(200).json({
+                    status: succes.status,
+                    message: succes.message,
+                    data: succes.data
+                })
+            }
+        });
     }
 };
 

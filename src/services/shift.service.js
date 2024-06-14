@@ -216,6 +216,64 @@ const shiftService = {
 				});
 			});
 		});
+	},
+	
+	getShiftInformationById: async (shiftInformation, callback) => {
+		logger.trace('shiftService -> getShiftInformationById');
+
+		if (!pool.connected) {
+			await pool.connect();
+		}
+
+		// Get a connection fore the prepared statement
+		const prepStatement = new sql.PreparedStatement(pool);
+
+		// Prepare valiables
+		prepStatement.input("userId", sql.BigInt);
+		prepStatement.input("shiftId", sql.BigInt);
+
+		// Bereid het statement door
+		prepStatement.prepare(`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
+								Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
+								Project.Title, Project.Address + ' ' + Project.HouseNr + ', ' + Project.City AS Address, Project.Company, Project.Description
+								FROM AssignedShift
+								INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
+								INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
+								WHERE AssignedShift.UserId = @userId AND AssignedShift.ShiftId = @shiftId`, (err) => {
+			if (err) {
+				callback(err, null);
+				logger.error(err);
+				return;
+			}
+
+			// Geef de waarden mee en voer uit
+			prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId}, (err, result) => {
+				if (err) {
+					callback(err, null);
+					logger.error(err);
+					return;
+				}
+				logger.debug("getShiftInformationById -> execute");
+
+				// Unprepare statment om connectie vrij te geven
+				prepStatement.unprepare((err) => {
+					logger.debug("getShiftInformationById -> statement unprepared");
+					if (err) {
+						logger.error(err);
+						callback(err, null);
+						return;
+					} else {
+						logger.info("Query executed");
+						callback(null, {
+							status: 200,
+							message: 'Shifts for userId: ' + shiftInformation.userId + ' and shiftID: ' + shiftInformation.shiftId,
+							data: result.recordset,
+					});
+
+					}
+				});
+			});
+		});
 	}
 };
 
