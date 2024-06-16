@@ -222,7 +222,7 @@ const shiftService = {
 		});
 	},
 
-	getShiftInformationById: async (shiftInformation, callback) => {
+	getShiftInformationById: async (shiftId, userId, callback) => {
 		logger.trace("shiftService -> getShiftInformationById");
 
 		if (!pool.connected) {
@@ -233,8 +233,8 @@ const shiftService = {
 		const prepStatement = new sql.PreparedStatement(pool);
 
 		// Prepare valiables
-		prepStatement.input("userId", sql.BigInt);
-		prepStatement.input("shiftId", sql.BigInt);
+		prepStatement.input("userID", sql.BigInt);
+		prepStatement.input("shiftID", sql.BigInt);
 
 		// Bereid het statement door
 		prepStatement.prepare(
@@ -244,8 +244,7 @@ const shiftService = {
 								FROM AssignedShift
 								INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
 								INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
-								WHERE AssignedShift.UserId = @userId AND AssignedShift.ShiftId = @shiftId`,
-			(err) => {
+								WHERE AssignedShift.UserId = @userID AND AssignedShift.ShiftId = @shiftID`,	(err) => {
 				if (err) {
 					callback(err, null);
 					logger.error(err);
@@ -253,10 +252,10 @@ const shiftService = {
 				}
 
 				// Geef de waarden mee en voer uit
-				prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId }, (err, result) => {
+				prepStatement.execute({ userID: userId, shiftID: shiftId }, (err, result) => {
 					if (err) {
-						callback(err, null);
 						logger.error(err);
+						callback(err, null);
 						return;
 					}
 					logger.debug("getShiftInformationById -> execute");
@@ -272,7 +271,7 @@ const shiftService = {
 							logger.info("Query executed");
 							callback(null, {
 								status: 200,
-								message: "Shifts for userId: " + shiftInformation.userId + " and shiftID: " + shiftInformation.shiftId,
+								message: "Shifts for userId: " + userId + " and shiftId: " + shiftId,
 								data: result.recordset,
 							});
 						}

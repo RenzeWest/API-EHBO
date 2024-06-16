@@ -115,9 +115,8 @@ const shiftController = {
 
 	getShiftInformationById: (req, res, next) => {
 		logger.trace("shiftController -> getShiftInformationById");
-		req.query.userId = req.userId;
 
-		shiftService.getShiftInformationById(req.query, (error, succes) => {
+		shiftService.getShiftInformationById(req.query.shiftId, req.userId, (error, succes) => {
 			if (error) {
 				logger.error("shiftController -> getShiftInformationById");
 				return next({
