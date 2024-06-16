@@ -248,6 +248,8 @@ const courseService = {
 				courseID: courseId
 			});
 
+			await prepStatement.unprepare();
+
 			if (result.rowsAffected[0] >= 1) {
 				logger.trace("CourseService -> delete: course deleted");
 				callback(null, {
