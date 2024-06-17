@@ -352,13 +352,12 @@ const shiftService = {
 			request.input("projectId", sql.BigInt, projectId);
 
 			request.query(
-				`SELECT * 
+				`SELECT AssignedShift.UserId, AssignedShift.ProjectId, AssignedShift.ShiftId, IsAccepted, FirstName, LastName, Emailaddress, PhoneNumber, StartDate, EndDate, StartTime, EndTime
 				FROM AssignedShift 
 				JOIN Member ON AssignedShift.UserId = Member.UserId 
 				JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
-			
-				WHERE AssignedShift.ProjectId = @projectId 
-				AND AssignedShift.IsAccepted IS NULL`,
+							
+				WHERE AssignedShift.ProjectId = @projectId AND AssignedShift.IsAccepted IS NULL`,
 				(error, result) => {
 					if (error) {
 						logger.error(error);
