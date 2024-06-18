@@ -86,8 +86,6 @@ const shiftService = {
 
 			await prepStatement.unprepare();
 
-			logger.debug("shift assigned");
-
 			callback(null, {
 				status: 200,
 				message: "Shift assigned",
@@ -106,13 +104,9 @@ const shiftService = {
 			await pool.connect();
 		}
 
-		// Get a connection fore the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
-
-		// Prepare valiables
 		prepStatement.input("userId", sql.BigInt);
 
-		// Bereid het statement door
 		prepStatement.prepare(
 			`SELECT AssignedShift.UserId, AssignedShift.ShiftId, AssignedShift.IsAccepted,
 			Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
@@ -128,7 +122,6 @@ const shiftService = {
 					return;
 				}
 
-				// Geef de waarden mee en voer uit
 				prepStatement.execute({ userId: userId }, (err, result) => {
 					if (err) {
 						callback(err, null);
@@ -137,7 +130,7 @@ const shiftService = {
 					}
 					logger.debug("getMyShifts -> execute");
 
-					// Unprepare statment om connectie vrij te geven
+
 					prepStatement.unprepare((err) => {
 						logger.debug("Login -> statement unprepared");
 						if (err) {
@@ -165,23 +158,20 @@ const shiftService = {
 			await pool.connect();
 		}
 
-		// Get a connection fore the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
 
-		// Prepare valiables
 		prepStatement.input("userId", sql.BigInt);
 		prepStatement.input("shiftId", sql.BigInt);
 		prepStatement.input("projectId", sql.BigInt);
 
-		// Bereid het statement door
+
 		prepStatement.prepare(`UPDATE AssignedShift SET IsAccepted = 1 WHERE UserId = @userId AND ShiftId = @shiftId AND ProjectId = @projectId AND IsAccepted IS NULL`, (err) => {
 			if (err) {
 				callback(err, null);
 				logger.error(err);
 				return;
 			}
-			console.log(assignedShiftInformation);
-			// Geef de waarden mee en voer uit
+
 			prepStatement.execute({ userId: assignedShiftInformation.userId, projectId: assignedShiftInformation.projectId, shiftId: assignedShiftInformation.shiftId }, (err, result) => {
 				if (err) {
 					callback(err, null);
@@ -189,8 +179,7 @@ const shiftService = {
 					return;
 				}
 				logger.debug("acceptForShift -> execute");
-				console.log(result);
-				// Unprepare statment om connectie vrij te geven
+
 				prepStatement.unprepare((err) => {
 					logger.debug("acceptForShift -> statement unprepared");
 					if (err) {
@@ -229,14 +218,11 @@ const shiftService = {
 			await pool.connect();
 		}
 
-		// Get a connection fore the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
 
-		// Prepare valiables
 		prepStatement.input("userID", sql.BigInt);
 		prepStatement.input("shiftID", sql.BigInt);
 
-		// Bereid het statement door
 		prepStatement.prepare(
 			`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
 								Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
@@ -251,7 +237,7 @@ const shiftService = {
 					return;
 				}
 
-				// Geef de waarden mee en voer uit
+			
 				prepStatement.execute({ userID: userId, shiftID: shiftId }, (err, result) => {
 					if (err) {
 						logger.error(err);
@@ -260,7 +246,6 @@ const shiftService = {
 					}
 					logger.debug("getShiftInformationById -> execute");
 
-					// Unprepare statment om connectie vrij te geven
 					prepStatement.unprepare((err) => {
 						logger.debug("getShiftInformationById -> statement unprepared");
 						if (err) {
@@ -268,7 +253,6 @@ const shiftService = {
 							callback(err, null);
 							return;
 						} else {
-							logger.info("Query executed");
 							callback(null, {
 								status: 200,
 								message: "Shifts for userId: " + userId + " and shiftId: " + shiftId,
@@ -288,14 +272,11 @@ const shiftService = {
 			await pool.connect();
 		}
 
-		// Get a connection fore the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
 
-		// Prepare valiables
 		prepStatement.input("userId", sql.BigInt);
 		prepStatement.input("shiftId", sql.BigInt);
 
-		// Bereid het statement door
 		prepStatement.prepare(`DELETE FROM AssignedShift WHERE UserId = @userId AND ShiftId = @shiftId`, (err) => {
 			if (err) {
 				callback(err, null);
@@ -303,7 +284,6 @@ const shiftService = {
 				return;
 			}
 
-			// Geef de waarden mee en voer uit
 			prepStatement.execute({ userId: shiftInformation.userId, shiftId: shiftInformation.shiftId }, (err, result) => {
 				if (err) {
 					callback(err, null);
@@ -312,7 +292,6 @@ const shiftService = {
 				}
 				logger.debug("deleteAssignedShift -> execute");
 
-				// Unprepare statment om connectie vrij te geven
 				prepStatement.unprepare((err) => {
 					logger.debug("deleteAssignedShift -> statement unprepared");
 					if (err) {
@@ -320,7 +299,6 @@ const shiftService = {
 						callback(err, null);
 						return;
 					} else if (result.rowsAffected[0] !== 0) {
-						logger.info("Query executed");
 						callback(null, {
 							status: 200,
 							message: "Succesfully deleted assigned shift",

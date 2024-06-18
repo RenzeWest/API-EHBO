@@ -10,7 +10,6 @@ function createShift(req, res, next) {
 	try {
 		const body = req.body;
 
-		// Log incoming request body
 		logger.debug("Incoming request body:", body);
 
 		chai.expect(body, "Missing projectID").to.have.property("projectId");
@@ -32,7 +31,6 @@ function assignShift(req, res, next) {
 	try {
 		const body = req.body;
 
-		// Log incoming request body
 		logger.debug("Incoming request body:", body);
 
 		chai.expect(body, "Missing projectID").to.have.property("projectId");
@@ -54,7 +52,6 @@ function acceptForShift(req, res, next) {
 	try {
 		const body = req.body;
 
-		// Log incoming request body
 		logger.debug("Incoming request body:", body);
 
 		chai.expect(body, "Missing projectID").to.have.property("projectId");
@@ -75,7 +72,6 @@ function shiftIdValidation(req, res, next) {
 	try {
 		const body = req.body;
 
-		// Log incoming request body
 		logger.debug("Incoming request body:", body);
 
 		chai.expect(body, "Missing shiftID").to.have.property("shiftId");

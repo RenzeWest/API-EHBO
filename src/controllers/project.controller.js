@@ -1,28 +1,7 @@
 const logger = require("../util/logger");
 const projectService = require("../services/project.service");
-const { get } = require("../..");
 
 const projectController = {
-	test: (req, res, next) => {
-		logger.trace("ProjectController -> test");
-		projectService.test((error, success) => {
-			if (error) {
-				return next({
-					status: error.status,
-					message: error.message,
-					data: {},
-				});
-			}
-			if (success) {
-				res.status(200).json({
-					status: success.status,
-					message: success.message,
-					data: success.data,
-				});
-			}
-		});
-	},
-
 	create: (req, res, next) => {
 		projectService.create(req.body, (error, success) => {
 			if (error) {
@@ -95,8 +74,8 @@ const projectController = {
 			if (succes) {
 				res.status(200).json({
 					status: succes.status,
-					message: succes.message || "Hoi",
-					data: succes.data || "Hoi",
+					message: succes.message,
+					data: succes.data,
 				});
 			}
 		});
@@ -124,7 +103,7 @@ const projectController = {
 	getProject: (req, res, next) => {
 		logger.trace("projectController -> getProject");
 
-		const projectId = req.query.projectId; // Read the projectId from the query parameters
+		const projectId = req.query.projectId;
 
 		if (!projectId) {
 			return res.status(400).json({
@@ -146,8 +125,8 @@ const projectController = {
 			if (success) {
 				res.status(200).json({
 					status: success.status,
-					message: success.message || "Success",
-					data: success.data || "No data found",
+					message: success.message,
+					data: success.data,
 				});
 			}
 		});
@@ -167,8 +146,8 @@ const projectController = {
 			if (succes) {
 				res.status(200).json({
 					status: succes.status,
-					message: succes.message || "Hoi",
-					data: succes.data || "Hoi",
+					message: succes.message,
+					data: succes.data,
 				});
 			}
 		});

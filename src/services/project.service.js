@@ -2,33 +2,27 @@ const pool = require("../doa/sql-database");
 const logger = require("../util/logger");
 const sql = require("mssql");
 const moment = require("moment");
-const { rejectProject, setProjectActive } = require("../controllers/project.controller");
-const { set } = require("../..");
+
 
 const projectService = {
 	create: async (data, callback) => {
 		logger.trace("ProjectService -> create");
-		console.log("Received data:", data);
+
 
 		try {
-			// Check if beginTime and endTime are provided and in correct format
 			if (!data.beginTime || !data.endTime) {
 				throw new Error("beginTime and endTime are required");
 			}
 
-			// Extract time values and validate their format
 			const beginTime = moment(data.beginTime.scale, "HH:mm:ss", true);
 			const endTime = moment(data.endTime.scale, "HH:mm:ss", true);
 
 			if (!beginTime.isValid() || !endTime.isValid()) {
 				throw new Error("Invalid time format for beginTime or endTime");
 			}
-
-			// Connect to the database pool
 			const poolPromise = await pool;
 			await poolPromise.connect();
 
-			// Prepare SQL statement
 			const prepStatement = new sql.PreparedStatement(poolPromise);
 			prepStatement.input("company", sql.NVarChar);
 			prepStatement.input("phonenumber", sql.NVarChar);
@@ -53,7 +47,6 @@ const projectService = {
                 VALUES (@company, @phonenumber, @landlinenumber, @adress, @city, @title, @description, @contactperson, @contactemail, @housenumber, @date, @currentdate, @beginTime, @endTime, @isActive, @endDate)
             `);
 
-			// Execute SQL statement
 			const result = await prepStatement.execute({
 				company: data.company,
 				phonenumber: data.phonenumber,
@@ -75,7 +68,6 @@ const projectService = {
 
 			await prepStatement.unprepare();
 
-			// Check if project was successfully created
 			if (result.rowsAffected[0] === 1) {
 				logger.trace("ProjectService -> create: Created a project");
 				callback(null, {
@@ -92,7 +84,6 @@ const projectService = {
 				});
 			}
 		} catch (error) {
-			// Log and return error
 			logger.error("ProjectService -> create: Error creating project", error);
 			callback({
 				status: 500,
@@ -103,7 +94,7 @@ const projectService = {
 		}
 	},
 
-	// Get all projects where IsAccepted === null
+
 	getAllUndecidedProject: async (callback) => {
 		logger.trace("ProjectService -> getAllUndecidedProject");
 
@@ -123,77 +114,10 @@ const projectService = {
 				});
 			}
 		});
-		// Get a connection for the prepared statement
-		// const prepStatement = new sql.PreparedStatement(pool);
-
-		// // Prepare the SQL statement
-		// const query = "SELECT * FROM Project WHERE IsAccepted IS NULL";
-
-		// prepStatement.prepare(query, (err) => {
-		// 	if (err) {
-		// 		logger.error(err);
-		// 		callback(err, null);
-		// 		return;
-		// 	}
-		// 	logger.trace("no error for preparing statement");
-
-		// 	prepStatement.execute({}, (err, result) => {
-		// 		logger.trace("starting execute");
-		// 		if (err) {
-		// 			logger.error(err);
-		// 			callback(err, null);
-		// 			return;
-		// 		}
-		// 		logger.debug("getAllUndecidedProject -> execute");
-
-		// 		// Check if projects are found
-		// 		if (result.recordset.length === 0) {
-		// 			logger.info("No projects found");
-		// 			callback(
-		// 				{
-		// 					status: 404,
-		// 					message: "Projects not found",
-		// 					data: {},
-		// 				},
-		// 				null
-		// 			);
-
-		// 			prepStatement.unprepare((err) => {
-		// 				logger.debug("getAllUndecidedProject -> statement unprepared");
-		// 				if (err) {
-		// 					logger.error(err);
-		// 					callback(err, null);
-		// 				}
-		// 			});
-		// 			return;
-		// 		}
-
-		// 		// Unprepare statement to release connection
-		// 		prepStatement.unprepare((err) => {
-		// 			logger.debug("getAllUndecidedProject -> statement unprepared");
-		// 			if (err) {
-		// 				logger.error(err);
-		// 				callback(err, null);
-		// 				return;
-		// 			} else {
-		// 				logger.info("getAllUndecidedProject Successful");
-		// 				const noPassword = result.recordset[0];
-		// 				delete noPassword.Password;
-
-		// 				callback(null, {
-		// 					status: 200,
-		// 					message: `Projects found`,
-		// 					data: result.recordset,
-		// 				});
-		// 			}
-		// 		});
-		// 	});
-		// });
+		
 	},
 	setProjectActive: async (data, callback) => {
 		logger.trace("ProjectService -> setProjectActive");
-		logger.debug(typeof data);
-		logger.debug(typeof callback, callback);
 		try {
 			const poolPromise = await pool;
 			await poolPromise.connect();
@@ -228,29 +152,23 @@ const projectService = {
 		}
 	},
 
-	// Get project using Id
+
 	getProject: async (projectId, callback) => {
-		logger.trace(projectId);
 		logger.trace("projectService -> getProject");
 
 		if (!pool.connected) {
 			await pool.connect();
 		}
 
-		// Get a connection for the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
-
-		// Prepare variables
 		prepStatement.input("projectId", sql.BigInt);
-
-		// Prepare the statement
 		prepStatement.prepare("SELECT * FROM Project WHERE ProjectId = @projectId", (err) => {
 			if (err) {
 				logger.error(err);
 				callback(err, null);
 				return;
 			}
-			console.log(projectId);
+
 			prepStatement.execute({ projectId: projectId }, (err, result) => {
 				if (err) {
 					logger.error(err);
@@ -259,7 +177,6 @@ const projectService = {
 				}
 				logger.debug("getProject -> execute");
 
-				// Check if a project is found
 				if (result.recordset.length === 0) {
 					logger.info("No project found");
 					callback(
@@ -281,7 +198,6 @@ const projectService = {
 					return;
 				}
 
-				// Unprepare statement to release connection
 				prepStatement.unprepare((err) => {
 					logger.debug("getProject -> statement unprepared");
 					if (err) {
@@ -310,10 +226,7 @@ const projectService = {
 			await pool.connect();
 		}
 
-		// Get a connection for the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
-
-		// Prepare the SQL statement
 		const query = "SELECT * FROM Project WHERE IsAccepted = 1 ";
 
 		prepStatement.prepare(query, (err) => {
@@ -322,10 +235,8 @@ const projectService = {
 				callback(err, null);
 				return;
 			}
-			logger.trace("no error for preparing statement");
 
 			prepStatement.execute({}, (err, result) => {
-				logger.trace("starting execute");
 				if (err) {
 					logger.error(err);
 					callback(err, null);
@@ -333,7 +244,6 @@ const projectService = {
 				}
 				logger.debug("getAcceptedProjects -> execute");
 
-				// Check if projects are found
 				if (result.recordset.length === 0) {
 					logger.info("No projects found");
 					callback(
@@ -355,7 +265,6 @@ const projectService = {
 					return;
 				}
 
-				// Unprepare statement to release connection
 				prepStatement.unprepare((err) => {
 					logger.debug("getActiveProjects -> statement unprepared");
 					if (err) {
@@ -385,10 +294,7 @@ const projectService = {
 			await pool.connect();
 		}
 
-		// Get a connection for the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
-
-		// Prepare the SQL statement
 		const query = "SELECT * FROM Project WHERE IsActive = 1 AND Date > GETDATE()";
 
 		prepStatement.prepare(query, (err) => {
@@ -397,7 +303,6 @@ const projectService = {
 				callback(err, null);
 				return;
 			}
-			logger.trace("no error for preparing statement");
 
 			prepStatement.execute({}, (err, result) => {
 				logger.trace("starting execute");
@@ -408,7 +313,6 @@ const projectService = {
 				}
 				logger.debug("getActiveProjects -> execute");
 
-				// Check if projects are found
 				if (result.recordset.length === 0) {
 					logger.info("No projects found");
 					callback(
@@ -430,7 +334,6 @@ const projectService = {
 					return;
 				}
 
-				// Unprepare statement to release connection
 				prepStatement.unprepare((err) => {
 					logger.debug("getActiveProjects -> statement unprepared");
 					if (err) {

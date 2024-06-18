@@ -1,9 +1,7 @@
 const logger = require("../util/logger");
 const shiftService = require("../services/shift.service");
-const { get } = require("../..");
 const shiftController = {
 	getShifts: (req, res, next) => {
-		logger.trace("shiftController -> getShifts");
 		logger.trace("shiftController -> getShifts");
 
 		const projectId = req.query.projectId;

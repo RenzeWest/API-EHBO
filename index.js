@@ -1,26 +1,21 @@
-// The index and main file of this API
 const express = require("express");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 3000;
 const logger = require("./src/util/logger");
 
-// Routes requirements
-
 const projectRoutes = require("./src/routes/project.routes");
-const loginRoutes = require('./src/routes/login.routes').router;
-const memberRoutes = require('./src/routes/member.routes');
-const courseRoutes = require('./src/routes/course.routes');
-const shiftRoutes = require('./src/routes/shift.routes');
-const firstResponderRoutes = require('./src/routes/firstResponder.routes');
-
+const loginRoutes = require("./src/routes/login.routes").router;
+const memberRoutes = require("./src/routes/member.routes");
+const courseRoutes = require("./src/routes/course.routes");
+const shiftRoutes = require("./src/routes/shift.routes");
 
 app.use(express.json());
 
 const corsOptions = {
 	origin: "*",
 };
-// Enable all cors
+
 app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
@@ -32,19 +27,13 @@ app.get("/", (req, res) => {
 	});
 });
 
-// Routes
-
-
 app.use(memberRoutes);
 app.use(loginRoutes);
 app.use(shiftRoutes);
 app.use(projectRoutes);
-app.use(firstResponderRoutes);
 app.use(courseRoutes);
 
-// Remaining routes
 app.use((req, res, next) => {
-	// This will run if a route isn't found
 	next({
 		status: 404,
 		message: "Route not found",
@@ -52,21 +41,15 @@ app.use((req, res, next) => {
 	});
 });
 
-
-
-
-// Remaining routes
-app.use((req, res, next) => { // This will run if a route isn't found
-    logger.warn('Route not found');
-    next({
-        status: 404,
-        message: 'Route not found',
-        data: {}
-    });
-
+app.use((req, res, next) => {
+	logger.warn("Route not found");
+	next({
+		status: 404,
+		message: "Route not found",
+		data: {},
+	});
 });
 
-// Als er een error is (next) dan komt hij hier. Hij kijkt of er een status en massage is, zo ja geeft hij die mee, zo nee geeft hij 500 en server error.
 app.use((error, req, res, next) => {
 	logger.warn(`An error has occured: error (${error.status || 500}), message (${error.message})`);
 	res.status(error.status || 500).json({
@@ -80,5 +63,4 @@ app.listen(port, () => {
 	logger.info(`The API is listening on port ${port}`);
 });
 
-// Deze kan chai gebruiker om in de tests de server op te starten
 module.exports = app;

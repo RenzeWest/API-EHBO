@@ -11,7 +11,6 @@ function createProject(req, res, next) {
 	try {
 		const body = req.body;
 
-		// Log incoming request body
 		logger.debug("Incoming request body:", body);
 
 		chai.expect(body, "Missing company").to.have.property("company");
@@ -30,7 +29,6 @@ function createProject(req, res, next) {
 		chai.expect(body, "Missing endTime").to.have.property("endTime");
 		chai.expect(body, "Missing endDate").to.have.property("endDate");
 
-		// Validate and convert date
 		const date = new Date(body.date);
 		if (isNaN(date.getTime())) {
 			throw new Error("Invalid date format");
@@ -46,7 +44,6 @@ function createProject(req, res, next) {
 			throw new Error("Current date cannot be before project date");
 		}
 
-		// Validate and format times using moment
 		const beginTime = moment(body.beginTime, "HH:mm:ss", true);
 		const endTime = moment(body.endTime, "HH:mm:ss", true);
 

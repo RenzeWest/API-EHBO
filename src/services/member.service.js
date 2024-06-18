@@ -10,13 +10,9 @@ const memberService = {
 			await pool.connect();
 		}
 
-		// Get a connection fore the prepared statement
 		const prepStatement = new sql.PreparedStatement(pool);
-
-		// Prepare valiables
 		prepStatement.input("userId", sql.BigInt);
 
-		// Bereid het statement door
 		prepStatement.prepare("SELECT * FROM Member WHERE UserId = @userId", (err) => {
 			if (err) {
 				logger.error(err);
@@ -32,7 +28,6 @@ const memberService = {
 				}
 				logger.debug("getMember -> execute");
 
-				// Controlleer of er een gebruiker is gevonden
 				if (result.recordset.length === 0) {
 					logger.info("No user found");
 					callback(
@@ -54,7 +49,6 @@ const memberService = {
 					return;
 				}
 
-                // Unprepare statment om connectie vrij te geven
                 prepStatement.unprepare(err => {
                     logger.debug('getMember -> statement unprepared');
                     if (err) {
@@ -65,7 +59,6 @@ const memberService = {
 
                         const baseData = result.recordset[0];
                         delete baseData.Password;
-                        console.log(baseData);
                         prepStatement.prepare('SELECT * FROM ObtainedCertificates WHERE UserId = @userId', err => {
                             if(err) {
                                 logger.error(err);

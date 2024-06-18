@@ -13,7 +13,6 @@ const jwtSecretKey = require('../src/util/config').secretkey
 
 let endpointToTest = '/api/addCourse';
 
-// Voorbeeld test
 describe ('UC Course Creation Tests', () => {
 
     // This will run before each "it"

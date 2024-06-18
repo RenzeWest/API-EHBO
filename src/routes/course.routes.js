@@ -1,14 +1,14 @@
-const chai = require('chai');
+const chai = require("chai");
 chai.should();
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const logger = require('../util/logger');
-const login = require('../routes/login.routes')
+const logger = require("../util/logger");
+const login = require("../routes/login.routes");
 
-const courseController = require('../controllers/course.controller');
+const courseController = require("../controllers/course.controller");
 
 function addCourseValidation(req, res, next) {
-    try {
+	try {
 		const body = req.body;
 		chai.expect(body, "Missing title").to.have.property("title");
 		chai.expect(body, "Missing description").to.have.property("description");
@@ -33,7 +33,7 @@ function enrollValidation(req, res, next) {
 	try {
 		const body = req.body;
 		chai.expect(body, "Missing courseId").to.have.property("courseId");
-		
+
 		next();
 	} catch (error) {
 		const splitedMessage = error.message.split(":");
@@ -46,12 +46,11 @@ function enrollValidation(req, res, next) {
 	}
 }
 
-// Routes
-router.get('/api/getCourses', login.validateToken, courseController.getCourses);
-router.get('/api/getAvailableCourses', login.validateToken, courseController.getAvailebleCourses);
-router.post('/api/enrollCourse', login.validateToken, enrollValidation ,courseController.enrollInCourse);
-router.get('/api/getCertificates', login.validateToken, courseController.getCertificates)
-router.post('/api/addCourse', login.validateToken, addCourseValidation, courseController.addCourse);
-router.delete('/api/deleteCourse', login.validateToken, courseController.deleteCourse);
+router.get("/api/getCourses", login.validateToken, courseController.getCourses);
+router.get("/api/getAvailableCourses", login.validateToken, courseController.getAvailebleCourses);
+router.post("/api/enrollCourse", login.validateToken, enrollValidation, courseController.enrollInCourse);
+router.get("/api/getCertificates", login.validateToken, courseController.getCertificates);
+router.post("/api/addCourse", login.validateToken, addCourseValidation, courseController.addCourse);
+router.delete("/api/deleteCourse", login.validateToken, courseController.deleteCourse);
 
 module.exports = router;
