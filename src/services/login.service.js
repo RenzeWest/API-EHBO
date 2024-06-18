@@ -2,7 +2,8 @@ const pool = require("../doa/sql-database");
 const logger = require("../util/logger");
 const sql = require("mssql");
 const jwt = require("jsonwebtoken");
-const jwtSecretKey = require("../util/config").secretkey;
+require("dotenv").config();
+const jwtSecretKey = process.env.JWT_SECRETKEY;
 
 
 const sessionDuration = { expiresIn: "1d" }; 

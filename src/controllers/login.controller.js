@@ -1,4 +1,3 @@
-const logger = require("../util/logger");
 const loginService = require("../services/login.service");
 
 const loginController = {

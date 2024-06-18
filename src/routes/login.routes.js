@@ -3,9 +3,10 @@ chai.should();
 const express = require("express");
 const router = express.Router();
 const logger = require("../util/logger");
+require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
-const jwtSecretKey = require("../util/config").secretkey;
+const jwtSecretKey = process.env.JWT_SECRETKEY
 const loginController = require("../controllers/login.controller");
 
 function validateLogin(req, res, next) {
@@ -57,7 +58,6 @@ function validateToken(req, res, next) {
 	}
 }
 
-router.get("/api/test", loginController.test);
 router.post("/api/login", validateLogin, loginController.login);
 router.get("/api/validatetoken", validateToken, loginController.validateToken);
 router.put("/api/update", validateToken, loginController.update);

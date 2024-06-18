@@ -81,7 +81,6 @@ function createProject(req, res, next) {
 }
 
 router.post("/api/create", createProject, projectController.create);
-router.get("/api/testproject", projectController.test);
 router.put("/api/setprojectactive", projectController.setProjectActive);
 router.get("/api/getAllUndecidedProjects", projectController.getAllUndecidedProject);
 router.get("/api/getAcceptedProjects", projectController.getAcceptedProjects);

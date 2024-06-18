@@ -1,9 +1,7 @@
 const pool = require("../doa/sql-database");
 const sql = require("mssql");
 const logger = require("../util/logger");
-const jwt = require("jsonwebtoken");
-const { assignShift, getAssignedShifts } = require("../controllers/shift.controller");
-const jwtSecretKey = require("../util/config").secretkey;
+
 
 const shiftService = {
 	getShifts: async (projectId, callback) => {
