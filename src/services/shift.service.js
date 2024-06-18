@@ -114,13 +114,13 @@ const shiftService = {
 
 		// Bereid het statement door
 		prepStatement.prepare(
-			`SELECT AssignedShift.UserId, AssignedShift.ShiftId, 
-								Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
-								Project.Title, Project.Address + ' ' + Project.HouseNr + ', ' + Project.City AS Address, Project.Company, Project.Description
-								FROM AssignedShift
-								INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
-								INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
-								WHERE AssignedShift.UserId = @userId;`,
+			`SELECT AssignedShift.UserId, AssignedShift.ShiftId, AssignedShift.IsAccepted,
+			Shift.StartDate, Shift.EndDate, Shift.StartTime, Shift.EndTime, 
+			Project.Title, Project.Address + ' ' + Project.HouseNr + ', ' + Project.City AS Address, Project.Company, Project.Description
+			FROM AssignedShift
+			INNER JOIN Shift ON AssignedShift.ShiftId = Shift.ShiftId
+			INNER JOIN Project ON AssignedShift.ProjectId = Project.ProjectId
+			WHERE AssignedShift.UserId = @userId;`,
 			(err) => {
 				if (err) {
 					callback(err, null);
