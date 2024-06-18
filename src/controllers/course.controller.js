@@ -74,10 +74,7 @@ const courseContoller = {
     getAvailebleCourses: (req, res, next) => {
         logger.trace('courseController -> getAvailebleCourses');
 
-        // Haal de userid uuit de req en zet het in de body, beetje onnodig I know
-        
-
-        courseService.getAvailebleCourses(req.userId, (error, succes) => {
+          courseService.getAvailebleCourses(req.userId, (error, succes) => {
             if (error) {
                 logger.error('courseController -> getAvailebleCourses');
                 return next({
@@ -99,7 +96,6 @@ const courseContoller = {
     enrollInCourse: (req, res, next) => {
         logger.trace('courseController -> enrollInCourse');
 
-        // Haal de userid uuit de req en zet het in de body, beetje onnodig I know
         req.body.userId = req.userId;
 
         courseService.enrollInCourse(req.body, (error, succes) => {

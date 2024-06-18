@@ -104,21 +104,19 @@ const courseService = {
 			prepStatement.input("description", sql.NVarChar);
 			prepStatement.input("datetime", sql.DateTime);
 			prepStatement.input("cost", sql.NVarChar);
-			prepStatement.input("maxParticipants", sql.Int);
 			prepStatement.input("location", sql.NVarChar);
 			prepStatement.input("teacherId", sql.BigInt);
 			prepStatement.input("certificateTitle", sql.NVarChar);
 
 			await prepStatement.prepare(`
-                INSERT INTO [dbo].[Course] ([Title], [Description], [DateTime], [Cost], [MaxParticipants], [Location], [TeacherId], [CertificateTitel])
-                VALUES (@title, @description, @datetime, @cost, @maxParticipants, @location, @teacherId, @certificateTitle);`);
+                INSERT INTO [dbo].[Course] ([Title], [Description], [DateTime], [Cost], [Location], [TeacherId], [CertificateTitel])
+                VALUES (@title, @description, @datetime, @cost, @location, @teacherId, @certificateTitle);`);
 
 			const result = await prepStatement.execute({
 				title: courseInformation.title,
 				description: courseInformation.description,
 				datetime: courseInformation.datetime,
 				cost: courseInformation.cost,
-				maxParticipants: courseInformation.maxParticipants,
 				location: courseInformation.location,
 				teacherId: courseInformation.teacherId,
 				certificateTitle: courseInformation.certificatieTitle,

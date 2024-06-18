@@ -68,8 +68,10 @@ const loginService = {
 
 						const UserId = Number(result.recordset[0].UserId);
 						const tokenPayload = { userId: UserId };
-
+						logger.info('hoi')
+						logger.info(jwtSecretKey)
 						jwt.sign(tokenPayload, jwtSecretKey, sessionDuration, (err, token) => {
+							logger.info(jwtSecretKey)
 							logger.info("User has succesfully logged in");
 							callback(null, {
 								status: 200,

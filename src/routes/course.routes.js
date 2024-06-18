@@ -14,7 +14,6 @@ function addCourseValidation(req, res, next) {
 		chai.expect(body, "Missing description").to.have.property("description");
 		chai.expect(body, "Missing datetime").to.have.property("datetime");
 		chai.expect(body, "Missing cost").to.have.property("cost");
-		chai.expect(body, "Missing maxParticipants").to.have.property("maxParticipants");
 		chai.expect(body, "Missing location").to.have.property("location");
 		chai.expect(body, "Missing certificatieTitle").to.have.property("certificatieTitle");
 

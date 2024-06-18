@@ -32,7 +32,6 @@ describe ('UC Course Creation Tests', () => {
             "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             "datetime": "2024-10-12 14:30:00.000",
             "cost": "100.00",
-            "maxParticipants": 10,
             "location": "Mooie Straatnaam 10",
             "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
@@ -58,7 +57,6 @@ describe ('UC Course Creation Tests', () => {
             "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             "datetime": "2024-10-12 14:30:00.000",
             "cost": "100.00",
-            "maxParticipants": 10,
             "location": "Mooie Straatnaam 10",
             "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
@@ -84,7 +82,6 @@ describe ('UC Course Creation Tests', () => {
             // "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             "datetime": "2024-10-12 14:30:00.000",
             "cost": "100.00",
-            "maxParticipants": 10,
             "location": "Mooie Straatnaam 10",
             "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
@@ -110,7 +107,6 @@ describe ('UC Course Creation Tests', () => {
             "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             // "datetime": "2024-10-12 14:30:00.000",
             "cost": "100.00",
-            "maxParticipants": 10,
             "location": "Mooie Straatnaam 10",
             "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
@@ -136,7 +132,6 @@ describe ('UC Course Creation Tests', () => {
             "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             "datetime": "2024-10-12 14:30:00.000",
             // "cost": "100.00",
-            "maxParticipants": 10,
             "location": "Mooie Straatnaam 10",
             "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
@@ -151,31 +146,6 @@ describe ('UC Course Creation Tests', () => {
         });
     });
 
-    it('TC-6 Missing maxParticipants', (done) => {
-        const token = jwt.sign({ userId: 2 }, jwtSecretKey);
-
-        chai.request(server)
-        .post(endpointToTest)
-        .set('Authorization', `bearer ${token}`)
-        .send({
-            "title": "Test Cursus 1",
-            "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
-            "datetime": "2024-10-12 14:30:00.000",
-            "cost": "100.00",
-            // "maxParticipants": 10,
-            "location": "Mooie Straatnaam 10",
-            "certificatieTitle": "CPR-Certified"
-        }).end((err, res) => {
-            chai.expect(res).to.have.status(400);
-            
-            const body = res.body
-            chai.expect(body).to.have.property('status').that.is.a('number').equals(400);
-            chai.expect(body).to.have.property('message').that.is.a('string').equals('Missing maxParticipants');
-            chai.expect(body).to.have.property('data').that.is.a('object').is.empty;
-            
-            done()
-        });
-    });
 
     it('TC-7 Missing location', (done) => {
         const token = jwt.sign({ userId: 2 }, jwtSecretKey);
@@ -188,7 +158,6 @@ describe ('UC Course Creation Tests', () => {
             "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             "datetime": "2024-10-12 14:30:00.000",
             "cost": "100.00",
-            "maxParticipants": 10,
             // "location": "Mooie Straatnaam 10",
             "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
@@ -214,7 +183,6 @@ describe ('UC Course Creation Tests', () => {
             "description": "Dit is een beschrijving voor test cursus 1! Veel plezier met lezen, want dit is gewoon een heleboel onzin en je zal dus zelf plezier nodig hebben om je te kunnen vermaken. Nouja, altijd al een test cursus willen doen? Dat kan nu dus!... Niet... Daaag, dit is wel genoeg voorbeeld tekst, fijne dag nog!",
             "datetime": "2024-10-12 14:30:00.000",
             "cost": "100.00",
-            "maxParticipants": 10,
             "location": "Mooie Straatnaam 10"
             // "certificatieTitle": "CPR-Certified"
         }).end((err, res) => {
